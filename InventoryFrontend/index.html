@@ -1,0 +1,2746 @@
+<!DOCTYPE html>
+<html lang="tr" data-bs-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GHVault | Ana Panel</title>
+    <link href="./index/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./index/css/all.min.css">
+    <link href="./index/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+
+    <script src="./index/js/xlsx.full.min.js"></script>
+    <script src="./index/js/chart.js"></script>
+    <script src="./index/js/sweetalert2.all.min.js"></script>
+
+    <style>
+        body {
+            background-color: #121212;
+        }
+
+        .sidebar {
+            height: 100vh;
+            background-color: #1e1e1e;
+            border-right: 1px solid #333;
+        }
+
+        .brand-text {
+            color: #f8f9fa;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .glasshouse-accent {
+            color: #0dcaf0;
+        }
+
+        .table-dark {
+            background-color: #1e1e1e;
+        }
+
+        .badge-cyber {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        .badge-network {
+            background-color: #198754;
+            color: white;
+        }
+
+        .password-masked {
+            font-family: monospace;
+            letter-spacing: 2px;
+            color: #ffc107;
+            cursor: pointer;
+            padding: 4px 8px;
+            background: rgba(255, 193, 7, 0.1);
+            border-radius: 4px;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            transition: all 0.2s;
+        }
+
+        .password-masked:hover {
+            background: rgba(255, 193, 7, 0.2);
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #2a2a2a;
+        }
+
+        .nav-link {
+            cursor: pointer;
+        }
+
+        .nav-link.active {
+            background-color: rgba(13, 202, 240, 0.1);
+            border-radius: 5px;
+            color: #0dcaf0 !important;
+            font-weight: bold;
+        }
+
+        /* Dashboard Kartları İçin Özel Gölgeler */
+        .dash-card {
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .dash-card:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Özel Siber Kaydırma Çubuğu */
+        ::-webkit-scrollbar {
+            width: 8px;
+            /* Dikey çubuk genişliği */
+            height: 8px;
+            /* Yatay çubuk yüksekliği */
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #121212;
+            /* Arka plan rengi - sayfa ile uyumlu */
+            border-left: 1px solid #333;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #0dcaf0;
+            /* Neon Mavi temanızın rengi */
+            border-radius: 10px;
+            /* Yumuşak köşeler */
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #0bacce;
+            /* Fareyle üzerine gelince biraz koyulaşır */
+        }
+
+        /* === EFSANE DARALTILABİLİR SOL MENÜ (NOC STYLE) === */
+        .layout-wrapper {
+            display: flex;
+            flex-wrap: nowrap;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .sidebar {
+            width: 260px;
+            min-width: 260px;
+            transition: all 0.3s ease;
+            position: relative;
+            /* Butonun dışarı taşması için */
+        }
+
+        .content-area {
+            flex-grow: 1;
+            min-width: 0;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        /* Sabit Buton Sütunu (Sticky Action) */
+        .sticky-action {
+            position: sticky !important;
+            right: 0;
+            background-color: #1e1e1e !important;
+            z-index: 10;
+            box-shadow: -5px 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        thead th.sticky-action {
+            z-index: 11;
+            background-color: #252525 !important;
+        }
+
+        /* Daraltılmış (Collapsed) Mod */
+        .sidebar.collapsed {
+            width: 80px;
+            min-width: 80px;
+        }
+
+        .sidebar.collapsed .brand-text {
+            display: none;
+        }
+
+        .sidebar.collapsed img {
+            max-height: 35px !important;
+            transition: 0.3s;
+        }
+
+        /* Font-size 0 taktiğiyle sadece yazıları uçurup ikonları bırakıyoruz */
+        .sidebar.collapsed .nav-link,
+        .sidebar.collapsed .btn-outline-danger {
+            font-size: 0;
+            text-align: center;
+            padding: 15px 0;
+        }
+
+        .sidebar.collapsed .nav-link i,
+        .sidebar.collapsed .btn-outline-danger i {
+            font-size: 1.2rem;
+            margin: 0 !important;
+        }
+
+        /* Kullanıcı bilgileri gizlenir, sadece kalkan ikonu kalır */
+        .sidebar.collapsed #userInfo b,
+        .sidebar.collapsed #userInfo span,
+        .sidebar.collapsed #userInfo br {
+            display: none !important;
+        }
+
+        /* Daraltma (Toggle) Butonu */
+        .sidebar-toggle-btn {
+            position: absolute;
+            top: 20px;
+            right: -15px;
+            /* Menünün dışına, sağa doğru efsane taşar */
+            background: #0dcaf0;
+            color: #121212;
+            border: 2px solid #1e1e1e;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            z-index: 1000;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s;
+        }
+
+        .sidebar.collapsed .sidebar-toggle-btn {
+            transform: rotate(180deg);
+        }
+
+        /* Yatay Kaydırma Çubuğunu Belirginleştir */
+        .table-responsive::-webkit-scrollbar {
+            height: 12px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: #0dcaf0;
+            border-radius: 10px;
+        }
+
+        .table-responsive::-webkit-scrollbar-track {
+            background: #1e1e1e;
+        }
+
+        /* Sabit Sütun (Sticky Column) Kuralları */
+        .table-responsive {
+            /* 250 yerine 150 yaparak tabloyu aşağı doğru uzattık */
+            max-height: calc(100vh - 150px);
+            overflow: auto;
+            border: 1px solid #333;
+            border-radius: 8px;
+        }
+
+        /* Başlıklar kayarken arkası boş görünmesin diye renk veriyoruz */
+        thead th {
+            position: sticky;
+            top: 0;
+            background-color: #252525 !important;
+            z-index: 11;
+            border-bottom: 2px solid #0dcaf0 !important;
+        }
+
+        /* Başlık kısmının da sabit kalması için */
+        thead th {
+            position: sticky;
+            top: 0;
+            background-color: #252525 !important;
+            z-index: 11;
+        }
+
+        /* Hem üstte hem sağda olan köşe başlık için z-index ayarı */
+        thead th.sticky-action {
+            z-index: 12;
+        }
+
+        /* === LIGHT MODE SİL BAŞTAN ÖZEL RENKLERİ === */
+        [data-bs-theme="light"] body {
+            background-color: #f4f6f9;
+        }
+
+        [data-bs-theme="light"] .sidebar {
+            background-color: #ffffff;
+            border-right: 1px solid #dee2e6;
+        }
+
+        [data-bs-theme="light"] .brand-text,
+        [data-bs-theme="light"] .sidebar .nav-link {
+            color: #333333 !important;
+        }
+
+        [data-bs-theme="light"] .sidebar .nav-link.active {
+            background-color: rgba(13, 202, 240, 0.15);
+            color: #0dcaf0 !important;
+        }
+
+        [data-bs-theme="light"] .dash-card {
+            background-color: #ffffff;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid #dee2e6;
+        }
+
+        [data-bs-theme="light"] .table-dark {
+            background-color: #ffffff;
+            color: #333333;
+        }
+
+        [data-bs-theme="light"] thead th {
+            background-color: #f8f9fa !important;
+            color: #333333 !important;
+            border-bottom: 2px solid #0dcaf0 !important;
+        }
+
+        [data-bs-theme="light"] .sticky-action {
+            background-color: #ffffff !important;
+            box-shadow: -5px 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        [data-bs-theme="light"] .table-hover tbody tr:hover {
+            background-color: #f1f3f5;
+        }
+
+        [data-bs-theme="light"] #userInfo b {
+            color: #333333 !important;
+        }
+
+        [data-bs-theme="light"] .table-responsive::-webkit-scrollbar-track {
+            background: #f4f6f9;
+        }
+
+        /* === LIGHT MODE KESİN ÇÖZÜMLERİ (İNATÇI KOYU RENKLERİ EZER) === */
+
+        /* 1. Beyaz Yazıları Koyu Gri Yap (Başlıklar görünür olur) */
+        [data-bs-theme="light"] .text-white {
+            color: #212529 !important;
+        }
+
+        /* 2. Koyu Arka Planları Beyaz Yap (Filtre kutusu, AD Ayarları Kartı) */
+        [data-bs-theme="light"] .bg-dark {
+            background-color: #ffffff !important;
+            border-color: #dee2e6 !important;
+        }
+
+        /* 3. Bootstrap Tablolarını Açık Renge Çevir (Cihazlar tablosu düzelir) */
+        [data-bs-theme="light"] .table-dark {
+            --bs-table-bg: #ffffff;
+            --bs-table-color: #212529;
+            --bs-table-border-color: #dee2e6;
+            --bs-table-striped-bg: #f8f9fa;
+            --bs-table-striped-color: #212529;
+            --bs-table-hover-bg: #e9ecef;
+            --bs-table-hover-color: #212529;
+            color: var(--bs-table-color) !important;
+            background-color: var(--bs-table-bg) !important;
+        }
+
+        /* 4. Inputlar ve Select Kutuları (Formlar bembeyaz ve okunur olur) */
+        [data-bs-theme="light"] .form-control,
+        [data-bs-theme="light"] .form-select {
+            background-color: #ffffff !important;
+            color: #212529 !important;
+            border-color: #ced4da !important;
+        }
+
+        [data-bs-theme="light"] .form-control:focus,
+        [data-bs-theme="light"] .form-select:focus {
+            border-color: #0dcaf0 !important;
+            box-shadow: 0 0 0 0.25rem rgba(13, 202, 240, 0.25) !important;
+        }
+
+        /* 5. Modallar (Açılan yeni kayıt pencereleri vb.) */
+        [data-bs-theme="light"] .modal-content {
+            background-color: #ffffff !important;
+            color: #212529 !important;
+        }
+
+        /* 6. Sticky Sütunu ve Başlıkları Açık Tema Yap */
+        [data-bs-theme="light"] .sticky-action {
+            background-color: #ffffff !important;
+        }
+
+        [data-bs-theme="light"] thead th {
+            background-color: #f8f9fa !important;
+            color: #212529 !important;
+        }
+
+        [data-bs-theme="light"] thead th.sticky-action {
+            background-color: #f8f9fa !important;
+        }
+
+        /* 7. Sol Menü (Sidebar) Textleri ve İkonları */
+        [data-bs-theme="light"] .sidebar .nav-link {
+            color: #495057 !important;
+        }
+
+        [data-bs-theme="light"] .sidebar .nav-link.active {
+            color: #0dcaf0 !important;
+            background-color: rgba(13, 202, 240, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container-fluid p-0">
+        <div class="layout-wrapper">
+            <nav class="sidebar p-3 d-flex flex-column" id="leftSidebar">
+
+                <button class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Menüyü Daralt/Genişlet">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <div class="text-center mb-4">
+                    <img src="glasshouse-logo.png" alt="GlassHouse" style="max-height: 70px;"
+                        onerror="this.src='https://via.placeholder.com/150x50/1e1e1e/0dcaf0?text=GlassHouse'">
+                    <h6 class="brand-text mt-2">GH <span class="glasshouse-accent">Vault</span></h6>
+                </div>
+                <ul class="nav flex-column gap-2 mb-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-white active" id="nav-dashboard" onclick="switchTab('dashboard')"><i
+                                class="fa-solid fa-chart-pie me-2"></i> Özet Panel</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link text-white" id="nav-devices" onclick="switchTab('devices')"><i
+                                class="fa-solid fa-server me-2"></i> Cihazlar</a>
+                    </li>
+
+                    <li class="nav-item d-none" id="menu-team">
+                        <a class="nav-link text-white" id="nav-team" onclick="switchTab('team')"><i
+                                class="fa-solid fa-users-gear me-2"></i> Ekip Yönetimi</a>
+                    </li>
+
+                    <li class="nav-item d-none" id="menu-logs">
+                        <a class="nav-link text-white" id="nav-logs" onclick="switchTab('logs')"><i
+                                class="fa-solid fa-clock-rotate-left me-2"></i> Audit Logları</a>
+                    </li>
+
+                    <li class="nav-item d-none" id="menu-ldap">
+                        <a class="nav-link text-info" id="nav-ldapsettings" onclick="switchTab('ldapsettings')"><i
+                                class="fa-solid fa-cogs me-2"></i> AD Ayarları</a>
+                    </li>
+
+                    <li class="nav-item d-none" id="menu-transfer-role">
+                        <a class="nav-link text-warning" data-bs-toggle="modal" data-bs-target="#transferRoleModal"><i
+                                class="fa-solid fa-crown me-2"></i> Yetki Devret</a>
+                    </li>
+                </ul>
+                <hr class="text-secondary">
+                <div class="mt-auto mb-3 text-secondary text-center" id="userInfo">
+                    <i class="fa-solid fa-spinner fa-spin text-info fs-4"></i><br>Yükleniyor...
+                </div>
+                <button class="btn btn-sm btn-outline-secondary w-100 mb-2" onclick="toggleTheme()">
+                    <i id="themeIcon" class="fa-solid fa-sun me-2"></i> <span id="themeText">Açık Tema</span>
+                </button>
+                <button class="btn btn-sm btn-outline-danger w-100" onclick="logout()"><i
+                        class="fa-solid fa-right-from-bracket"></i> Çıkış Yap</button>
+            </nav>
+
+            <main class="content-area px-md-4 mt-4">
+                <div id="view-dashboard">
+                    <div
+                        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-4 border-bottom border-secondary">
+                        <h1 class="h3 text-white">Sistem Özeti</h1>
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div
+                                    class="d-flex flex-wrap gap-4 align-items-center bg-dark border border-secondary rounded p-3 shadow-sm">
+                                    <div class="text-secondary font-monospace" id="sysClock"
+                                        style="letter-spacing: 1px;">SYS.TIME: --:--:--</div>
+                                    <div class="border-start border-secondary d-none d-md-block" style="height: 24px;">
+                                    </div>
+
+                                    <div class="font-monospace" style="letter-spacing: 1px;">
+                                        <span id="apiStatusDot" class="text-warning"><i
+                                                class="fa-solid fa-circle fa-beat-fade"
+                                                style="font-size: 8px;"></i></span>
+                                        API: <span id="apiStatusText" class="text-warning fw-bold">YÜKLENİYOR</span>
+                                    </div>
+
+                                    <div class="border-start border-secondary d-none d-md-block" style="height: 24px;">
+                                    </div>
+
+                                    <div class="font-monospace" style="letter-spacing: 1px;">
+                                        <span id="adStatusDot" class="text-warning"><i
+                                                class="fa-solid fa-circle fa-beat-fade"
+                                                style="font-size: 8px;"></i></span>
+                                        LDAP (AD): <span id="adStatusText"
+                                            class="text-warning fw-bold">YÜKLENİYOR</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-outline-info" onclick="loadDashboard()"><i
+                                class="fa-solid fa-rotate-right"></i> Verileri Yenile</button>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <div class="dash-card border-top border-info border-3 p-3 text-center">
+                                <h2 id="dashTotal" class="text-info fw-bold mb-0"><i
+                                        class="fa-solid fa-spinner fa-spin fs-4"></i></h2>
+                                <small class="text-secondary text-uppercase fw-bold">Toplam Cihaz</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="dash-card border-top border-success border-3 p-3 text-center">
+                                <h2 id="dashActive" class="text-success fw-bold mb-0"><i
+                                        class="fa-solid fa-spinner fa-spin fs-4"></i></h2>
+                                <small class="text-secondary text-uppercase fw-bold">Aktif Cihazlar</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="dash-card border-top border-primary border-3 p-3 text-center">
+                                <h2 id="dashCyber" class="text-primary fw-bold mb-0"><i
+                                        class="fa-solid fa-spinner fa-spin fs-4"></i></h2>
+                                <small class="text-secondary text-uppercase fw-bold">Cyber Sec Cihazları</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="dash-card border-top border-warning border-3 p-3 text-center">
+                                <h2 id="dashNetwork" class="text-warning fw-bold mb-0"><i
+                                        class="fa-solid fa-spinner fa-spin fs-4"></i></h2>
+                                <small class="text-secondary text-uppercase fw-bold">Network Cihazları</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <div
+                                class="dash-card p-3 h-100 d-flex flex-column align-items-center justify-content-center">
+                                <h6 class="text-secondary mb-3 w-100 text-center border-bottom border-secondary pb-2">
+                                    Marka Dağılımı</h6>
+                                <div style="position: relative; height:250px; width:100%">
+                                    <canvas id="vendorChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <div
+                                class="dash-card p-3 h-100 d-flex flex-column align-items-center justify-content-center">
+                                <h6 class="text-secondary mb-3 w-100 text-center border-bottom border-secondary pb-2">
+                                    Departman Bazlı Envanter</h6>
+                                <div style="position: relative; height:250px; width:100%">
+                                    <canvas id="deptChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-devices" class="d-none">
+                    <div
+                        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-2 border-bottom border-secondary">
+                        <h1 class="h3 text-white">Ağ ve Güvenlik Cihazları</h1>
+
+                        <div class="d-flex gap-2 align-items-center" id="deviceActionButtons">
+                            <input type="file" id="excelFileInput" accept=".xlsx, .xls" class="d-none"
+                                onchange="importFromExcel(event)">
+
+                            <button type="button" class="btn btn-sm btn-danger fw-bold text-white"
+                                onclick="deleteSelectedDevices()">
+                                <i class="fa-solid fa-dumpster-fire"></i> Seçilenleri Sil
+                            </button>
+
+                            <button type="button" class="btn btn-sm btn-success fw-bold text-white"
+                                onclick="document.getElementById('excelFileInput').click()">
+                                <i class="fa-solid fa-file-excel"></i> Excel Yükle
+                            </button>
+
+                            <button type="button" class="btn btn-sm btn-warning fw-bold text-dark"
+                                onclick="exportToExcel()">
+                                <i class="fa-solid fa-download"></i> Rapor İndir
+                            </button>
+
+                            <button type="button" class="btn btn-sm btn-info fw-bold text-dark" data-bs-toggle="modal"
+                                data-bs-target="#addDeviceModal">
+                                <i class="fa-solid fa-plus"></i> Yeni Cihaz
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mb-3 mt-2 bg-dark p-2 rounded border border-secondary align-items-center">
+                        <div class="col-md-3">
+                            <input type="text" id="deviceSearchInput"
+                                class="form-control form-control-sm bg-dark text-white border-secondary"
+                                placeholder="Genel arama (Müşteri, cihaz, ip)..." onkeyup="searchDevices()">
+                        </div>
+                        <div class="col-md-2">
+                            <select id="filterCustomer"
+                                class="form-select form-select-sm bg-dark text-white border-secondary"
+                                onchange="searchDevices()">
+                                <option value="">Tüm Müşteriler</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select id="filterSite" class="form-select form-select-sm bg-dark text-white border-info"
+                                onchange="searchDevices()">
+                                <option value="">Tüm Siteler</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select id="filterVendor"
+                                class="form-select form-select-sm bg-dark text-white border-secondary"
+                                onchange="searchDevices()">
+                                <option value="">Tüm Markalar</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select id="filterDept"
+                                class="form-select form-select-sm bg-dark text-white border-secondary"
+                                onchange="searchDevices()">
+                                <option value="">Tüm Departmanlar</option>
+                                <option value="Cyber Security">Cyber Security</option>
+                                <option value="Network">Network</option>
+                                <option value="Both">Both</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive border border-secondary rounded shadow"
+                        style="overflow: auto; max-height: calc(100vh - 180px);">
+                        <table class="table table-dark table-striped table-hover align-middle text-nowrap m-0"
+                            style="min-width: 1600px;">
+                            <thead>
+                                <tr>
+                                    <th class="text-center"><input type="checkbox" class="form-check-input"
+                                            id="selectAllCheckbox" onclick="toggleAllCheckboxes()"></th>
+                                    <th>ID</th>
+                                    <th style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">Müşteri
+                                    </th>
+                                    <th>Site/Ortam</th>
+                                    <th>Marka</th>
+                                    <th>Versiyon</th>
+                                    <th>Cihaz Adı</th>
+                                    <th>IP Adresi</th>
+                                    <th>Açıklama</th>
+                                    <th>Departman</th>
+                                    <th class="text-center">Durum</th>
+                                    <th class="text-center sticky-action">İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="deviceTableBody">
+                                <tr>
+                                    <td colspan="12" class="text-center">Yükleniyor...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div> <!-- view-devices BİTİŞİ -->
+
+                <div id="view-team" class="d-none">
+                    <div
+                        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom border-secondary">
+                        <h1 class="h3 text-white">Sistemdeki Çalışanlar</h1>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-info fw-bold" data-bs-toggle="modal"
+                                data-bs-target="#adminRegisterModal">
+                                <i class="fa-solid fa-user-plus"></i> Yerel Hesap Aç
+                            </button>
+                            <button class="btn btn-sm btn-info fw-bold text-dark" data-bs-toggle="modal"
+                                data-bs-target="#addStaffModal">
+                                <i class="fa-solid fa-cloud-arrow-down"></i> AD'den Personel Çek
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped align-middle">
+                            <thead>
+                                <tr>
+                                    <th><i class="fa-solid fa-user text-secondary"></i> Ad Soyad</th>
+                                    <th><i class="fa-solid fa-fingerprint text-secondary"></i> Kullanıcı Adı</th>
+                                    <th><i class="fa-solid fa-building text-secondary"></i> Departman</th>
+                                    <th><i class="fa-solid fa-sitemap text-secondary"></i> Rol</th>
+                                </tr>
+                            </thead>
+                            <tbody id="employeesTableBody"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="row mt-5 mb-2">
+                        <div class="col-12">
+                            <div class="dash-card p-3 border border-secondary">
+                                <div
+                                    class="d-flex justify-content-between align-items-center mb-3 border-bottom border-secondary pb-2">
+                                    <h6 class="text-info mb-0"><i
+                                            class="fa-solid fa-satellite-dish text-success fa-beat-fade me-2"></i> Aktif
+                                        Oturumlar (Sistemdeki Kullanıcılar)</h6>
+                                    <button class="btn btn-sm btn-outline-info" onclick="loadOnlineUsers()"><i
+                                            class="fa-solid fa-rotate"></i></button>
+                                </div>
+                                <div class="table-responsive">
+                                    <table
+                                        class="table table-dark table-hover table-sm align-middle text-secondary m-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Kullanıcı</th>
+                                                <th>Rol</th>
+                                                <th>Online Süresi</th>
+                                                <th class="text-end">İşlem</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="onlineUsersBody">
+                                            <tr>
+                                                <td colspan="4" class="text-center text-info">Bağlantılar taranıyor...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="approvals-section" class="d-none mt-5 pt-4 border-top border-secondary">
+                        <div
+                            class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom border-secondary">
+                            <h1 class="h3 text-warning"><i class="fa-solid fa-user-clock me-2"></i> Bekleyen Kayıt
+                                Talepleri</h1>
+                            <span class="badge bg-warning text-dark px-3 py-2">Sadece Main Admin Yetkisiyle
+                                Görülür</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-dark table-striped table-hover align-middle"
+                                style="min-width: 1600px !important; table-layout: fixed;">
+                                <thead>
+                                    <tr>
+                                        <th>Ad Soyad</th>
+                                        <th>Kullanıcı Adı</th>
+                                        <th>Departman</th>
+                                        <th>Talep Edilen Rol</th>
+                                        <th class="text-end">İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="approvalsTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div> <!-- approvals-section BİTİŞİ -->
+                </div> <!-- view-team BİTİŞİ -->
+
+                <div id="view-logs" class="d-none">
+                    <div
+                        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 border-bottom border-secondary">
+                        <h1 class="h3 text-white">Sistem İşlem Logları</h1>
+                    </div>
+
+                    <div class="row g-2 mb-3 mt-3 bg-dark p-2 rounded border border-secondary align-items-center">
+                        <div class="col-md-2">
+                            <select id="logUserFilter"
+                                class="form-select form-select-sm bg-dark text-white border-secondary"
+                                onchange="applyLogFilters()">
+                                <option value="">Tüm Kullanıcılar</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select id="logActionFilter"
+                                class="form-select form-select-sm bg-dark text-white border-secondary"
+                                onchange="applyLogFilters()">
+                                <option value="">Tüm İşlem Tipleri</option>
+                            </select>
+                        </div>
+                        <div class="col-md-7 d-flex gap-2 justify-content-end align-items-center">
+                            <small class="text-secondary">Başlangıç:</small>
+                            <input type="date" id="logStartDate"
+                                class="form-control bg-dark text-white border-secondary form-control-sm"
+                                style="width: auto;">
+                            <small class="text-secondary ms-2">Bitiş:</small>
+                            <input type="date" id="logEndDate"
+                                class="form-control bg-dark text-white border-secondary form-control-sm"
+                                style="width: auto;">
+                            <button type="button" class="btn btn-sm btn-outline-warning fw-bold ms-2"
+                                onclick="exportSyslog()">
+                                <i class="fa-solid fa-download"></i> İndir
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="logsTable" class="table table-dark table-striped table-sm text-secondary w-100">
+                            <thead>
+                                <tr>
+                                    <th>Tarih / Saat</th>
+                                    <th>Kullanıcı</th>
+                                    <th>İşlem Tipi</th>
+                                    <th>Aksiyon Detayı</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div> <!-- view-logs BİTİŞİ -->
+
+                <div id="view-ldapsettings" class="d-none">
+                    <div
+                        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom border-secondary">
+                        <h1 class="h3 text-info"><i class="fa-solid fa-cogs me-2"></i>Active Directory (LDAP) Ayarları
+                        </h1>
+                        <button class="btn btn-sm btn-info fw-bold text-dark" onclick="saveLdapSettings()">
+                            <i class="fa-solid fa-save me-2"></i> Ayarları Kaydet
+                        </button>
+                    </div>
+
+                    <div class="card bg-dark text-white border-secondary p-4 mb-4">
+                        <form id="ldapForm">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="small text-secondary">Name</label>
+                                    <input type="text" id="ldapName"
+                                        class="form-control bg-dark text-white border-secondary" value="GlassHouse AD">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="small text-secondary">Server IP/Name</label>
+                                    <input type="text" id="ldapServerIp"
+                                        class="form-control bg-dark text-white border-secondary"
+                                        placeholder="Örn: 192.168.132.29"
+                                        oninput="this.value = this.value.replace(/[^0-9.]/g, '')">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="small text-secondary">Server Port</label>
+                                    <input type="number" id="ldapPort"
+                                        class="form-control bg-dark text-white border-secondary" value="389">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="small text-secondary">Common Name Identifier</label>
+                                    <input type="text" id="ldapCommonName"
+                                        class="form-control bg-dark text-white border-secondary" value="sAMAccountName">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="small text-secondary">Distinguished Name</label>
+                                    <input type="text" id="ldapDn"
+                                        class="form-control bg-dark text-white border-secondary"
+                                        placeholder="dc=glasshouse,dc=local">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="small text-secondary">Bind Type</label>
+                                    <select id="ldapBindType" class="form-select bg-dark text-white border-secondary">
+                                        <option value="Simple">Simple</option>
+                                        <option value="Anonymous">Anonymous</option>
+                                        <option value="Regular" selected>Regular</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="small text-warning">User DN (Okuyucu Servis Hesabı)</label>
+                                    <input type="text" id="ldapUserDn"
+                                        class="form-control bg-dark text-white border-warning"
+                                        placeholder="cn=ldap,cn=users,dc=glasshouse,dc=local">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="small text-warning">Password</label>
+                                    <input type="password" id="ldapPassword"
+                                        class="form-control bg-dark text-white border-warning" placeholder="••••••••">
+                                </div>
+                                <div class="col-12 mt-4">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" role="switch"
+                                            id="ldapSecureConnection">
+                                        <label class="form-check-label text-info" for="ldapSecureConnection">Secure
+                                            Connection (SSL/TLS Kullan)</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addDeviceModal" tabindex="-1" data-bs-backdrop="static" data-bs-theme="dark">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content bg-dark text-light border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-info">Yeni Envanter Kaydı</h5><button type="button"
+                        class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="addDeviceForm">
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-4"><label class="small text-secondary">Müşteri</label><input type="text"
+                                    id="devCustomer" class="form-control bg-dark text-white border-secondary" required>
+                            </div>
+                            <div class="col-md-4"><label class="small text-info">Site/Ortam</label><input type="text"
+                                    id="devSite" class="form-control bg-dark text-white border-info"
+                                    placeholder="Örn: DMZ, Prod...">
+                            </div>
+                            <div class="col-md-4"><label class="small text-secondary">Marka</label><select
+                                    id="devVendor" class="form-select bg-dark text-white border-secondary" required
+                                    onchange="checkVendor('add')"></select><input type="text" id="devVendorOther"
+                                    class="form-control bg-dark text-white border-warning mt-2 d-none"
+                                    placeholder="Lütfen markayı yazınız..."></div>
+                            <div class="col-md-4"><label class="small text-warning">Versiyon</label><input type="text"
+                                    id="devVersion" class="form-control bg-dark text-white border-warning"
+                                    placeholder="Örn: 13.1-49.13"></div>
+                            <div class="col-md-4"><label class="small text-secondary">Cihaz Adı</label><input
+                                    type="text" id="devName" class="form-control bg-dark text-white border-secondary"
+                                    required></div>
+                            <div class="col-md-4"><label class="small text-secondary">Hostname</label><input type="text"
+                                    id="devHostname" class="form-control bg-dark text-white border-secondary"></div>
+                            <div class="col-md-6"><label class="small text-info">IP Adresi</label><input type="text"
+                                    id="devIp" class="form-control bg-dark text-white border-info" required
+                                    oninput="this.value = this.value.replace(/[^0-9.]/g, '')"></div>
+                            <div class="col-md-6"><label class="small text-secondary">Gateway</label><input type="text"
+                                    id="devGateway" class="form-control bg-dark text-white border-secondary"></div>
+                            <div class="col-md-6"><label class="small text-danger">Departman</label><select
+                                    id="devVisibleTo" class="form-select bg-dark text-white border-danger" required>
+                                    <option value="Cyber Security">Cyber Security</option>
+                                    <option value="Network">Network</option>
+                                    <option value="Both">Both</option>
+                                </select></div>
+                            <div class="col-md-6"><label class="small text-secondary">Seri No</label><input type="text"
+                                    id="devSerial" class="form-control bg-dark text-white border-secondary"></div>
+                            <div class="col-md-6"><label class="small text-warning">Kullanıcı Adı</label><input
+                                    type="text" id="devUsername" class="form-control bg-dark text-white border-warning"
+                                    required></div>
+                            <div class="col-md-6"><label class="small text-warning">Şifre</label><input type="password"
+                                    id="devPassword" class="form-control bg-dark text-white border-warning" required>
+                            </div>
+                            <div class="col-12"><label class="small text-secondary">Açıklama</label><textarea
+                                    id="devDescription"
+                                    class="form-control bg-dark text-white border-secondary"></textarea></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-secondary"><button type="submit"
+                            class="btn btn-info fw-bold">Kaydet</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editDeviceModal" tabindex="-1" data-bs-backdrop="static" data-bs-theme="dark">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content bg-dark text-light border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-warning">Cihazı Düzenle</h5><button type="button"
+                        class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="editDeviceForm">
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <input type="hidden" id="editDevId">
+                            
+                            <div class="col-md-4">
+                                <label class="small text-secondary">Müşteri</label>
+                                <input type="text" id="editDevCustomer" class="form-control bg-dark text-white border-secondary" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="small text-info">Site/Ortam</label>
+                                <input type="text" id="editDevSite" class="form-control bg-dark text-white border-info">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="small text-warning">Versiyon</label>
+                                <input type="text" id="editDevVersion" class="form-control bg-dark text-white border-warning" placeholder="Örn: 13.1-49.13">
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="small text-secondary">Marka</label>
+                                <select id="editDevVendor" class="form-select bg-dark text-white border-secondary" required onchange="checkVendor('edit')"></select>
+                                <input type="text" id="editDevVendorOther" class="form-control bg-dark text-white border-warning mt-2 d-none" placeholder="Lütfen markayı yazınız...">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="small text-secondary">Cihaz Adı</label>
+                                <input type="text" id="editDevName" class="form-control bg-dark text-white border-secondary" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="small text-secondary">Hostname</label>
+                                <input type="text" id="editDevHostname" class="form-control bg-dark text-white border-secondary">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="small text-info">Aktiflik Durumu</label>
+                                <select id="editDevIsActive" class="form-select bg-dark text-white border-info">
+                                    <option value="true">Aktif (Kullanımda)</option>
+                                    <option value="false">Pasif (Kullanım Dışı)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-info">IP Adresi</label>
+                                <input type="text" id="editDevIp" class="form-control bg-dark text-white border-info" required oninput="this.value = this.value.replace(/[^0-9.]/g, '')">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="small text-secondary">Gateway</label>
+                                <input type="text" id="editDevGateway" class="form-control bg-dark text-white border-secondary">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-danger">Departman</label>
+                                <select id="editDevVisibleTo" class="form-select bg-dark text-white border-danger" required>
+                                    <option value="Cyber Security">Cyber Security</option>
+                                    <option value="Network">Network</option>
+                                    <option value="Both">Both</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="small text-secondary">Seri No</label>
+                                <input type="text" id="editDevSerial" class="form-control bg-dark text-white border-secondary">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-warning">Kullanıcı Adı</label>
+                                <input type="text" id="editDevUsername" class="form-control bg-dark text-white border-warning" required>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="small text-warning"><i class="fa-solid fa-key me-1"></i> Yeni Şifre (Güncellemek İstiyorsanız)</label>
+                                <input type="password" id="editDevPassword" class="form-control bg-dark text-white border-warning" placeholder="Şifreyi güncellemek veya yeni şifre atamak için buraya yazın...">
+                                <small class="text-secondary">Eğer şifreyi değiştirmek istemiyorsanız boş bırakabilirsiniz.</small>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="small text-secondary">Açıklama</label>
+                                <textarea id="editDevDescription" class="form-control bg-dark text-white border-secondary" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-secondary">
+                        <button type="submit" class="btn btn-warning fw-bold text-dark">Değişiklikleri Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="transferDeviceModal" tabindex="-1" data-bs-backdrop="static" data-bs-theme="dark">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-light border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-primary"><i class="fa-solid fa-right-left"></i> Cihazı Devret</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="transferDeviceForm">
+                    <div class="modal-body"><input type="hidden" id="transDevId">
+                        <p class="small text-secondary">Bu cihazı başka bir departmana devrediyorsunuz.</p><label
+                            class="form-label text-info fw-bold">Yeni Departman:</label><select id="transDevDept"
+                            class="form-select bg-dark text-white border-info" required>
+                            <option value="Cyber Security">Cyber Security</option>
+                            <option value="Network">Network</option>
+                            <option value="Both">Both (Her İkisi)</option>
+                        </select>
+                    </div>
+                    <div class="modal-footer border-secondary"><button type="submit"
+                            class="btn btn-primary fw-bold">Devret</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="transferRoleModal" tabindex="-1" data-bs-backdrop="static" data-bs-theme="dark">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-light border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-warning"><i class="fa-solid fa-crown"></i> Yetki Devret</h5><button
+                        type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="transferRoleForm">
+                    <div class="modal-body">
+                        <div class="alert alert-danger small"><i class="fa-solid fa-triangle-exclamation"></i> DİKKAT:
+                            Yetkinizi devrettiğiniz an kendi yetkilerinizi kaybeder ve standart Görevli statüsüne
+                            düşersiniz!</div><label class="form-label text-warning fw-bold">Yetkiyi Devralacak Kullanıcı
+                            Adı:</label><input type="text" id="transRoleTarget"
+                            class="form-control bg-dark text-white border-warning" required
+                            placeholder="Örn: jesse.pinkman">
+                    </div>
+                    <div class="modal-footer border-secondary"><button type="submit"
+                            class="btn btn-warning fw-bold text-dark">Yetkiyi Devret ve Çıkış Yap</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addStaffModal" tabindex="-1" data-bs-backdrop="static" data-bs-theme="dark">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-info"><i class="fa-solid fa-user-shield"></i> AD Personeli Yetkilendir
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="addStaffForm">
+                    <div class="modal-body">
+
+                        <div class="mb-3 border-bottom border-secondary pb-3">
+                            <label class="small text-info fw-bold"><i class="fa-solid fa-cloud-arrow-down"></i> AD'den
+                                Personel Seç</label>
+                            <div class="d-flex gap-2">
+                                <select id="adUserSelect" class="form-select bg-dark text-white border-info"
+                                    onchange="autofillAdUser()">
+                                    <option value="">-- Listeyi Yüklemek İçin Yandaki Butona Basın --</option>
+                                </select>
+                                <button type="button" class="btn btn-info" onclick="loadAdUsersIntoSelect()"
+                                    id="btnFetchAd" title="AD'den Listeyi Çek">
+                                    <i class="fa-solid fa-rotate"></i>
+                                </button>
+                            </div>
+                            <small class="text-secondary" id="adUserHelp">GlassHouse sunucusuna bağlanarak personelleri
+                                getirir.</small>
+                        </div>
+
+                        <div class="alert alert-warning small py-2">
+                            <i class="fa-solid fa-circle-info"></i> Seçilen kişinin şifresi Active Directory tarafından
+                            yönetilecektir.
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="small text-secondary">Şirket Kullanıcı Adı</label>
+                            <input type="text" id="staffUsername"
+                                class="form-control bg-dark text-white border-secondary" required readonly>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="small text-secondary">Adı</label>
+                                <input type="text" id="staffFirstName"
+                                    class="form-control bg-dark text-white border-secondary" required readonly>
+                            </div>
+                            <div class="col-6">
+                                <label class="small text-secondary">Soyadı</label>
+                                <input type="text" id="staffLastName"
+                                    class="form-control bg-dark text-white border-secondary" required readonly>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="small text-secondary">Departman</label>
+                            <select id="staffDept" class="form-select bg-dark text-white border-secondary" required
+                                onchange="toggleOtherDeptInput()">
+                                <option value="Cyber Security">Cyber Security</option>
+                                <option value="Network">Network</option>
+                                <option value="Other">-- Diğer (Elle Yaz) --</option>
+                            </select>
+                        </div>
+                        <div class="mb-3 d-none" id="otherDeptGroup">
+                            <label class="small text-info">Yeni Departman Adı</label>
+                            <input type="text" id="otherDeptName" class="form-control bg-dark text-white border-info"
+                                placeholder="Departman ismini giriniz...">
+                        </div>
+                        <div class="mb-3">
+                            <label class="small text-danger">Uygulama Rolü</label>
+                            <select id="staffRole" class="form-select bg-dark text-white border-danger" required>
+                                <option value="Izleyici">İzleyici</option>
+                                <option value="Operator">Operator</option>
+                                <option value="SuperAdmin">Süper Admin</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-secondary">
+                        <button type="submit" class="btn btn-info fw-bold text-dark">Sisteme Yetkilendir</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editRoleModal" tabindex="-1" data-bs-backdrop="static" data-bs-theme="dark">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-warning"><i class="fa-solid fa-user-pen me-2"></i>Personel Düzenle</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="editRoleForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="editRoleUsername">
+                        <div class="mb-3">
+                            <label class="small text-secondary">Kullanıcı Adı</label>
+                            <input type="text" id="editRoleDisplayUsername"
+                                class="form-control bg-dark text-info border-secondary" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="small text-danger">Yeni Sistem Rolü</label>
+                            <select id="editRoleSelect" class="form-select bg-dark text-white border-danger" required>
+                                <option value="Izleyici">Izleyici</option>
+                                <option value="Operator">Operator</option>
+                                <option value="SuperAdmin">Super Admin</option>
+                            </select>
+                        </div>
+                        <hr class="border-secondary my-4">
+                        <div class="mb-2">
+                            <label class="small text-warning"><i class="fa-solid fa-key me-1"></i>Yeni Şifre Belirle
+                                (İsteğe Bağlı)</label>
+                            <input type="password" id="editRoleNewPassword"
+                                class="form-control bg-dark text-white border-warning"
+                                placeholder="Değiştirmek istemiyorsanız boş bırakın...">
+                            <small class="text-secondary mt-1 d-block">Sadece yerel hesapların şifresi
+                                sıfırlanabilir.</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-secondary">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                        <button type="submit" class="btn btn-warning fw-bold text-dark"><i
+                                class="fa-solid fa-save me-2"></i>Değişiklikleri Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="adminRegisterModal" tabindex="-1" data-bs-backdrop="static" data-bs-theme="dark">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-info"><i class="fa-solid fa-user-plus me-2"></i>Yerel Hesap Oluştur</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="adminRegisterForm">
+                    <div class="modal-body">
+                        <div class="alert alert-info small py-2">
+                            <i class="fa-solid fa-circle-info"></i> Buradan açılan hesaplar <b>anında onaylanır</b> ve
+                            sisteme giriş yapabilir.
+                        </div>
+                        <div class="mb-3">
+                            <label class="small text-secondary">Kullanıcı Adı</label>
+                            <input type="text" id="regUsername" class="form-control bg-dark text-white border-secondary"
+                                required>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="small text-secondary">Adı</label>
+                                <input type="text" id="regFirstName"
+                                    class="form-control bg-dark text-white border-secondary" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="small text-secondary">Soyadı</label>
+                                <input type="text" id="regLastName"
+                                    class="form-control bg-dark text-white border-secondary" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="small text-secondary">Şifre</label>
+                            <input type="password" id="regPassword"
+                                class="form-control bg-dark text-white border-secondary" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="small text-secondary">Departman</label>
+                            <select id="regDept" class="form-select bg-dark text-white border-secondary" required>
+                                <option value="Cyber Security">Cyber Security</option>
+                                <option value="Network">Network</option>
+                                <option value="Both">Both (Her İkisi)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="small text-danger">Uygulama Rolü</label>
+                            <select id="regRole" class="form-select bg-dark text-white border-danger" required>
+                                <option value="Izleyici">Izleyici</option>
+                                <option value="Operator">Operator</option>
+                                <option value="SuperAdmin">Super Admin</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-secondary">
+                        <button type="submit" class="btn btn-info fw-bold text-dark"><i
+                                class="fa-solid fa-check me-2"></i>Hesabı Aç</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="./index/js/jquery.min.js"></script>
+    <script src="./index/js/bootstrap.bundle.min.js"></script>
+    <script src="./index/js/jquery.dataTables.min.js"></script>
+    <script src="./index/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+
+        // 1. EN TEPEDE FONKSİYONU TANIMLA (Hoisting hatası yememek için)
+        function parseJwt(token) {
+            if (!token) return null;
+            try {
+                var base64Url = token.split('.')[1];
+                var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                console.error("Token çözülemedi:", e);
+                return null;
+            }
+        }
+
+        // 2. ŞİMDİ TOKEN'I ÇEK VE ÇÖZ
+        const token = localStorage.getItem('jwt_token');
+        console.log("LocalStorage'dan gelen Token:", token);
+
+        const decodedToken = token ? parseJwt(token) : null;
+        console.log("Çözülmüş Token Verisi:", decodedToken);
+
+        if (!decodedToken) {
+            console.warn("Token geçersiz veya bulunamadı! Login ekranına yönlendiriliyorsunuz...");
+            localStorage.removeItem('jwt_token');
+            window.location.href = 'login.html';
+        }
+
+        // 3. KULLANICI BİLGİLERİNİ VE DEĞİŞKENLERİ AYARLA
+        let userRole = decodedToken ? (decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || decodedToken.role || decodedToken.Role || "Yetkisiz") : "Yetkisiz";
+        let currentDevices = [];
+        let vendorChartInst = null;
+        let deptChartInst = null;
+
+        // 4. ARAYÜZÜ (DOM) YÜKLE
+        window.addEventListener('DOMContentLoaded', () => {
+            if (!decodedToken) return;
+
+            const firstName = decodedToken.FirstName || decodedToken["FirstName"] || "";
+            const lastName = decodedToken.LastName || decodedToken["LastName"] || "";
+            const fullName = (firstName || lastName) ? `${firstName} ${lastName}` : (decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || "Bilinmiyor");
+
+            document.getElementById('userInfo').innerHTML = `
+        <i class="fa-solid fa-user-shield text-success fs-4 mb-2"></i><br>
+        <b class="text-white fs-6">${fullName}</b><br>
+        <span class="badge bg-danger mt-1">${userRole}</span>
+    `;
+        });
+
+        // === 🌓 TEMA YÖNETİM MOTORU ===
+        (function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+        })();
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+            document.documentElement.setAttribute('data-bs-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeUI(newTheme);
+        }
+
+        function updateThemeUI(theme) {
+            const icon = document.getElementById('themeIcon');
+            const text = document.getElementById('themeText');
+            if (!icon || !text) return;
+
+            if (theme === 'light') {
+                icon.className = 'fa-solid fa-moon me-2';
+                text.innerText = 'Koyu Tema';
+            } else {
+                icon.className = 'fa-solid fa-sun me-2';
+                text.innerText = 'Açık Tema';
+            }
+        }
+
+        // Sayfa yüklendiğinde buton ikonunu eşitle
+        window.addEventListener('DOMContentLoaded', () => {
+            const currentTheme = localStorage.getItem('theme') || 'dark';
+            updateThemeUI(currentTheme);
+        });
+
+
+        // === GLOBAL TOAST (HIZLI BİLDİRİM) AYARI ===
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            background: '#1e1e1e',
+            color: '#fff',
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        });
+
+        // === 🌍 ORTAM (ENVIRONMENT) VE API AYARLARI ===
+        const isProd = true;
+
+        const TEST_API = "http://localhost:5044/api";
+        const LIVE_API = "http://10.197.227.227/api/api";
+
+        const API_BASE_URL = isProd ? LIVE_API : TEST_API;
+
+        // --- 1. KİMLİK DOĞRULAMA (BİLET KONTROLÜ) ---
+
+        // DOM Yüklendiğinde arayüzü çiz
+        window.addEventListener('DOMContentLoaded', () => {
+            if (!decodedToken) return;
+
+            const firstName = decodedToken.FirstName || decodedToken["FirstName"] || "";
+            const lastName = decodedToken.LastName || decodedToken["LastName"] || "";
+            const fullName = (firstName || lastName) ? `${firstName} ${lastName}` : (decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || "Bilinmiyor");
+
+            document.getElementById('userInfo').innerHTML = `
+        <i class="fa-solid fa-user-shield text-success fs-4 mb-2"></i><br>
+        <b class="text-white fs-6">${fullName}</b><br>
+        <span class="badge bg-danger mt-1">${userRole}</span>
+    `;
+        });
+
+        // if (!decodedToken) { localStorage.removeItem('jwt_token'); window.location.href = 'login.html'; }
+
+        // 1. SÜPER ADMİN: Her yeri görür (Eski Main Admin)
+        if (userRole === "SuperAdmin" || userRole === "MainAdmin") {
+            document.getElementById('menu-team').classList.remove('d-none');
+            document.getElementById('menu-logs').classList.remove('d-none');
+            document.getElementById('menu-transfer-role').classList.remove('d-none');
+            document.getElementById('menu-ldap').classList.remove('d-none');
+            document.getElementById('approvals-section')?.classList.remove('d-none');
+        }
+        // 2. OPERATÖR: Sadece Cihazları ve Logları görür. Ekip veya AD ayarlarını GÖREMEZ.
+        else if (userRole === "Operator" || userRole.includes("Lider")) {
+            document.getElementById('menu-logs').classList.remove('d-none');
+        }
+
+        // 3. İZLEYİCİ: En üstteki "Yeni Cihaz, Toplu Sil, Excel Yükle" buton grubunu toptan gizle
+        if (userRole === "Izleyici" || userRole === "Görevli") {
+            const actionBtns = document.getElementById('deviceActionButtons');
+            if (actionBtns) actionBtns.classList.add('d-none');
+        }
+
+        loadDevices().then(() => { loadDashboard(); });
+
+        $('#deviceSearchInput').off('keyup').on('keyup', function () {
+            if (dtDevices) dtDevices.search(this.value).draw();
+        });
+        ;
+
+        // --- 2. SEKMELER ARASI GEÇİŞ ---
+        function switchTab(tabName) {
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            document.getElementById('nav-' + tabName).classList.add('active');
+
+            document.getElementById('view-dashboard').classList.add('d-none');
+            document.getElementById('view-devices').classList.add('d-none');
+            document.getElementById('view-team').classList.add('d-none');
+            document.getElementById('view-logs').classList.add('d-none');
+            document.getElementById('view-ldapsettings').classList.add('d-none');
+
+            document.getElementById('view-' + tabName).classList.remove('d-none');
+
+            if (tabName === 'dashboard') loadDashboard();
+            if (tabName === 'devices') loadDevices();
+            if (tabName === 'team') { loadEmployees(); loadOnlineUsers(); if (userRole === "MainAdmin" || userRole === "SuperAdmin") loadApprovals(); }
+            if (tabName === 'logs') loadLogs();
+            if (tabName === 'ldapsettings') loadLdapSettings();
+        }
+
+        // --- CANLI CİHAZ ARAMA MOTORU ---
+        function searchDevices() {
+            const searchInput = document.getElementById("deviceSearchInput").value.toLowerCase();
+            const filterCustomer = document.getElementById("filterCustomer").value.toLowerCase();
+            const filterSite = document.getElementById("filterSite").value.toLowerCase(); // YENİ
+            const filterVendor = document.getElementById("filterVendor").value.toLowerCase();
+            const filterDept = document.getElementById("filterDept").value.toLowerCase();
+
+            const tableBody = document.getElementById("deviceTableBody");
+            const tableRows = tableBody.querySelectorAll("tr:not(#noResultsRow)");
+
+            let matchCount = 0;
+
+            tableRows.forEach(row => {
+                if (row.cells.length < 4) return; // Sütun sayısı arttığı için güvenlik kontrolü
+
+                // Sütun İndeksleri: 2=Müşteri, 3=Site, 4=Marka, 8=Departman
+                const customer = row.cells[2].innerText.toLowerCase();
+                const site = row.cells[3].innerText.toLowerCase(); // YENİ
+                const vendor = row.cells[4].innerText.toLowerCase();
+                const dept = row.cells[8].innerText.toLowerCase();
+                const rowFullText = row.innerText.toLowerCase();
+
+                const matchSearch = rowFullText.includes(searchInput);
+                const matchCustomer = filterCustomer === "" || customer.includes(filterCustomer);
+                const matchSite = filterSite === "" || site === filterSite; // YENİ
+                const matchVendor = filterVendor === "" || vendor.includes(filterVendor);
+                const matchDept = filterDept === "" || dept === filterDept;
+
+                if (matchSearch && matchCustomer && matchSite && matchVendor && matchDept) {
+                    row.style.display = "";
+                    matchCount++;
+                } else {
+                    row.style.display = "none";
+                    const cb = row.querySelector('.row-checkbox');
+                    if (cb) cb.checked = false;
+                }
+            });
+
+            let noResultsRow = document.getElementById("noResultsRow");
+            if (matchCount === 0) {
+                if (!noResultsRow) {
+                    noResultsRow = document.createElement("tr");
+                    noResultsRow.id = "noResultsRow";
+                    tableBody.appendChild(noResultsRow);
+                }
+                noResultsRow.innerHTML = `<td colspan="11" class="text-center text-warning fw-bold py-4"><i class="fa-solid fa-magnifying-glass-minus fs-5 me-2"></i> Kriterlere uyan cihaz bulunamadı.</td>`;
+                noResultsRow.style.display = "";
+            } else {
+                if (noResultsRow) noResultsRow.style.display = "none";
+            }
+        }
+
+        // Müşteri, Site ve Marka filtre kutularını dolduran yeni fonksiyon
+        function populateFilters() {
+            if (!currentDevices) return;
+            const customers = [...new Set(currentDevices.map(d => d.customer))].filter(Boolean).sort();
+            const sites = [...new Set(currentDevices.map(d => d.site))].filter(Boolean).sort(); // YENİ
+            const vendors = [...new Set(currentDevices.map(d => d.vendor))].filter(Boolean).sort();
+
+            let cHtml = `<option value="">Tüm Müşteriler</option>`;
+            customers.forEach(c => cHtml += `<option value="${c}">${c}</option>`);
+            document.getElementById('filterCustomer').innerHTML = cHtml;
+
+            let sHtml = `<option value="">Tüm Siteler</option>`;
+            sites.forEach(s => sHtml += `<option value="${s}">${s}</option>`);
+            document.getElementById('filterSite').innerHTML = sHtml;
+
+            let vHtml = `<option value="">Tüm Markalar</option>`;
+            vendors.forEach(v => vHtml += `<option value="${v}">${v}</option>`);
+            document.getElementById('filterVendor').innerHTML = vHtml;
+        }
+
+        // --- 3. LDAP API FONKSİYONLARI ---
+        async function loadLdapSettings() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/LdapSettings`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('ldapName').value = data.name || 'GlassHouse AD';
+                    document.getElementById('ldapServerIp').value = data.serverIp || '';
+                    document.getElementById('ldapPort').value = data.port || 389;
+                    document.getElementById('ldapCommonName').value = data.commonNameIdentifier || 'sAMAccountName';
+                    document.getElementById('ldapDn').value = data.distinguishedName || '';
+                    document.getElementById('ldapBindType').value = data.bindType || 'Regular';
+                    document.getElementById('ldapUserDn').value = data.userDn || '';
+                    document.getElementById('ldapPassword').value = data.password || '';
+                    document.getElementById('ldapSecureConnection').checked = data.secureConnection || false;
+                }
+            } catch (error) {
+                console.error("LDAP Ayarları yüklenirken hata:", error);
+            }
+        }
+
+        async function saveLdapSettings() {
+            const settings = {
+                name: document.getElementById('ldapName').value,
+                serverIp: document.getElementById('ldapServerIp').value,
+                port: parseInt(document.getElementById('ldapPort').value),
+                commonNameIdentifier: document.getElementById('ldapCommonName').value,
+                distinguishedName: document.getElementById('ldapDn').value,
+                bindType: document.getElementById('ldapBindType').value,
+                userDn: document.getElementById('ldapUserDn').value,
+                password: document.getElementById('ldapPassword').value,
+                secureConnection: document.getElementById('ldapSecureConnection').checked
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/LdapSettings`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(settings)
+                });
+
+                if (response.ok) {
+                    Swal.fire({ title: 'Başarılı!', text: 'AD Ayarları Kaydedildi!', icon: 'success', background: '#1e1e1e', color: '#fff', confirmButtonColor: '#0dcaf0' });
+                } else {
+                    const errText = await response.text();
+                    Swal.fire({ title: 'Hata!', text: errText, icon: 'error', background: '#1e1e1e', color: '#fff', confirmButtonColor: '#0dcaf0' });
+                }
+            } catch (error) {
+                console.error("Kaydetme hatası:", error);
+            }
+        }
+
+        // --- 4. DASHBOARD (ÖZET PANEL) ---
+        // --- 4. DASHBOARD (ÖZET PANEL) ---
+        function loadDashboard() {
+            if (!currentDevices) return;
+
+            document.getElementById('dashTotal').innerText = currentDevices.length;
+            document.getElementById('dashActive').innerText = currentDevices.filter(d => d.isActive).length;
+            document.getElementById('dashCyber').innerText = currentDevices.filter(d => d.visibleTo === 'Cyber Security').length;
+            document.getElementById('dashNetwork').innerText = currentDevices.filter(d => d.visibleTo === 'Network').length;
+
+            if (currentDevices.length === 0) {
+                if (vendorChartInst) vendorChartInst.destroy();
+                if (deptChartInst) deptChartInst.destroy();
+                return;
+            }
+
+            const vendorCounts = {};
+            const deptCounts = { 'Cyber Security': 0, 'Network': 0, 'Both': 0 };
+
+            currentDevices.forEach(d => {
+                vendorCounts[d.vendor] = (vendorCounts[d.vendor] || 0) + 1;
+                if (deptCounts[d.visibleTo] !== undefined) deptCounts[d.visibleTo]++;
+            });
+
+            if (vendorChartInst) vendorChartInst.destroy();
+            if (deptChartInst) deptChartInst.destroy();
+
+            const ctxVendor = document.getElementById('vendorChart').getContext('2d');
+            vendorChartInst = new Chart(ctxVendor, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(vendorCounts),
+                    datasets: [{
+                        data: Object.values(vendorCounts),
+                        backgroundColor: ['#0dcaf0', '#198754', '#ffc107', '#dc3545', '#6f42c1', '#fd7e14', '#e83e8c', '#6610f2'],
+                        borderWidth: 1, borderColor: '#1e1e1e'
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#f8f9fa', font: { size: 11 } } } } }
+            });
+
+            const ctxDept = document.getElementById('deptChart').getContext('2d');
+            deptChartInst = new Chart(ctxDept, {
+                type: 'bar',
+                data: {
+                    labels: ['Cyber Security', 'Network', 'Her İkisi (Both)'],
+                    datasets: [{
+                        label: 'Cihaz Sayısı',
+                        data: [deptCounts['Cyber Security'], deptCounts['Network'], deptCounts['Both']],
+                        backgroundColor: ['#0d6efd', '#198754', '#6c757d'],
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#333' }, ticks: { color: '#adb5bd', stepSize: 1 } },
+                        x: { grid: { display: false }, ticks: { color: '#f8f9fa' } }
+                    }
+                }
+            });
+
+            // Grafik yüklemesi bitince online listesini de getir
+
+        } // <--- loadDashboard BURADA BİTER!
+
+        // === ONLİNE KULLANICILAR VE FORCE LOGOUT (DIŞARI ÇIKARILDI) ===
+        async function loadOnlineUsers() {
+            const tbody = document.getElementById('onlineUsersBody');
+            if (!tbody) return;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/Auth/online-users`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    const onlineUsers = await res.json();
+                    tbody.innerHTML = '';
+
+                    if (onlineUsers.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-secondary py-3">Aktif oturum bulunamadı.</td></tr>`;
+                        return;
+                    }
+
+                    onlineUsers.forEach(u => {
+                        let kickBtn = (userRole === "Super Admin" || userRole === "MainAdmin") && u.username !== decodedToken.unique_name
+                            ? `<button class="btn btn-sm btn-outline-danger" onclick="forceLogoutUser('${u.username}')" title="Kullanıcıyı At"><i class="fa-solid fa-plug-circle-xmark"></i></button>`
+                            : `<span class="text-secondary">-</span>`;
+
+                        tbody.innerHTML += `<tr>
+                    <td><b class="text-white"><i class="fa-solid fa-circle text-success" style="font-size: 7px; vertical-align: middle;"></i> ${u.username}</b></td>
+                    <td><span class="badge bg-secondary">${u.role}</span></td>
+                    <td><span class="text-info">${u.sessionDuration}</span></td>
+                    <td class="text-end">${kickBtn}</td>
+                </tr>`;
+                    });
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-warning py-3">Aktif oturumlar listesi güncellenemedi.</td></tr>`;
+                }
+            } catch (e) {
+                console.error("Online kullanıcı yükleme hatası:", e);
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-3">Sunucu bağlantı hatası.</td></tr>`;
+            }
+        }
+
+        async function forceLogoutUser(username) {
+            const result = await Swal.fire({
+                title: 'Kullanıcıyı At?',
+                text: `'${username}' kullanıcısının oturumu zorla sonlandırılacak!`,
+                icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545', cancelButtonColor: '#6c757d', confirmButtonText: 'Evet, Bağlantıyı Kes!', cancelButtonText: 'İptal', background: '#1e1e1e', color: '#fff'
+            });
+            if (!result.isConfirmed) return;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/Auth/force-logout/${username}`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+                if (res.ok) {
+                    Toast.fire({ icon: 'success', title: 'Kullanıcı sistemden uzaklaştırıldı.' });
+                    loadOnlineUsers();
+                } else {
+                    Swal.fire({ title: 'Hata!', text: 'Kullanıcı atılamadı.', icon: 'error', background: '#1e1e1e', color: '#fff' });
+                }
+            } catch (e) { Toast.fire({ icon: 'error', title: 'Bağlantı hatası oluştu.' }); }
+        }
+
+        function updateVendorList() {
+            const defaultVendors = ["Check Point", "Cisco", "Dell", "Fortinet", "Palo Alto Networks"];
+            const addSelect = document.getElementById('devVendor');
+            const editSelect = document.getElementById('editDevVendor');
+            const allVendors = currentDevices.map(d => d.vendor);
+            const uniqueVendors = [...new Set(allVendors)];
+            const customVendors = uniqueVendors.filter(v => v && !defaultVendors.includes(v) && v !== "Other");
+
+            let optionsHtml = `<option value="">Seçiniz...</option>`;
+            defaultVendors.forEach(v => optionsHtml += `<option value="${v}">${v}</option>`);
+            customVendors.forEach(v => optionsHtml += `<option value="${v}" class="text-info fw-bold">${v}</option>`);
+            optionsHtml += `<option value="Other">Diğer</option>`;
+
+            if (addSelect) addSelect.innerHTML = optionsHtml;
+            if (editSelect) editSelect.innerHTML = optionsHtml;
+        }
+
+        function checkVendor(mode) {
+            const selectId = mode === 'add' ? 'devVendor' : 'editDevVendor';
+            const otherInputId = mode === 'add' ? 'devVendorOther' : 'editDevVendorOther';
+            const select = document.getElementById(selectId);
+            const otherInput = document.getElementById(otherInputId);
+            if (select.value === 'Other') { otherInput.classList.remove('d-none'); otherInput.required = true; }
+            else { otherInput.classList.add('d-none'); otherInput.required = false; }
+        }
+
+        // === AKILLI MÜŞTERİ / SİTE PARÇALAYICI ===
+        function parseCustomerAndSite(rawName) {
+            const keywords = ["DR", "Prod", "DMZ", "Load Balancer", "ADM", "Test", "Internal", "Local"];
+            let customer = rawName || "";
+            let site = "";
+
+            for (let key of keywords) {
+                const regex = new RegExp("[- ]*\\b" + key + "\\b", "i");
+                if (regex.test(customer)) {
+                    customer = customer.replace(regex, "").trim();
+                    site = key.toUpperCase();
+                    break;
+                }
+            }
+            if (customer.endsWith("-")) customer = customer.slice(0, -1).trim();
+            return { customer: customer, site: site || "Genel" };
+        }
+
+        // --- CİHAZLARI ÇEKME VE LİSTELEME ---
+        async function loadDevices() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/Devices`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.status === 401) return logout();
+
+                let dbDevices = await res.json();
+
+                // YENİ: Veritabanından gelen sorunlu isimleri (Örn: Atlastek-DR) havada temizliyoruz
+                currentDevices = dbDevices.map(d => {
+                    let parsed = parseCustomerAndSite(d.customer);
+                    return {
+                        ...d,
+                        customer: parsed.customer,
+                        site: (d.site && d.site !== "-" && d.site !== "Genel") ? d.site : parsed.site
+                    };
+                });
+
+                updateVendorList();
+                populateFilters(); // FİLTRELERİ DOLDURUR
+
+                // Genel Seçim Kutusunu sıfırla
+                document.getElementById('selectAllCheckbox').checked = false;
+
+                const tbody = document.getElementById('deviceTableBody');
+                if (!tbody) return;
+                tbody.innerHTML = '';
+
+                currentDevices.forEach(d => {
+                    let badge = d.visibleTo === 'Cyber Security' ? 'badge-cyber' : (d.visibleTo === 'Network' ? 'badge-network' : 'bg-secondary');
+                    let statusIcon = d.isActive ? '<i class="fa-solid fa-check-circle text-success fs-5" title="Aktif"></i>' : '<i class="fa-solid fa-times-circle text-danger fs-5" title="Pasif"></i>';
+                    let desc = d.description ? (d.description.length > 70 ? d.description.substring(0, 70) + "..." : d.description) : '<span class="text-secondary">-</span>';
+
+                    let passBtn = d.username === "******" ? `<i class="fa-solid fa-lock text-danger me-2"></i>` : `<button class="btn btn-sm btn-outline-warning me-1" onclick="viewPassword(${d.id}, this)"><i class="fa-solid fa-eye"></i></button>`;
+                    let editBtn = `<button class="btn btn-sm btn-outline-info me-1" onclick="openEditModal(${d.id})"><i class="fa-solid fa-pen-to-square"></i></button>`;
+                    let transBtn = `<button class="btn btn-sm btn-outline-primary me-1" onclick="openTransferDevModal(${d.id})"><i class="fa-solid fa-right-left"></i></button>`;
+                    let delBtn = `<button class="btn btn-sm btn-outline-danger" onclick="deleteDevice(${d.id}, '${d.name}')"><i class="fa-solid fa-trash"></i></button>`;
+                    let actionBtns = userRole === "Görevli" ? passBtn : (passBtn + editBtn + transBtn + delBtn);
+                    let checkbox = `<input type="checkbox" class="form-check-input row-checkbox" value="${d.id}">`;
+
+                    let siteBadge = d.site ? `<span class="badge bg-dark border border-info text-info">${d.site}</span>` : `<span class="text-secondary">-</span>`;
+                    let versionText = d.version ? `<span class="text-warning fw-bold">${d.version}</span>` : `<span class="text-secondary">-</span>`;
+
+                    // Müşteri sütununu daraltıp uzun isimleri ... ile gizliyoruz. Fareyle üzerine gelince tam adını gösterir (title)
+                    let customerCell = `<td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${d.customer}"><b class="text-white">${d.customer}</b></td>`;
+
+                    // DİKKAT: Müşteri daraltıldı, Versiyon eklendi.
+                    tbody.innerHTML += `<tr class="text-nowrap">
+                            <td class="text-center">${checkbox}</td>
+                            <td>${d.id}</td>
+                            ${customerCell}
+                            <td>${siteBadge}</td>
+                            <td><b class="text-secondary">${d.vendor}</b></td>
+                            <td>${versionText}</td> <td>${d.name}</td>
+                            <td><span class="text-info">${d.ipAddress}</span></td>
+                            <td><small>${desc}</small></td>
+                            <td><span class="badge ${badge}">${d.visibleTo}</span></td>
+                            <td class="text-center">${statusIcon}</td>
+                            <td class="text-center sticky-action">${actionBtns}</td>
+                        </tr>`;
+                });
+
+                searchDevices();
+
+                if (!document.getElementById('view-dashboard').classList.contains('d-none')) {
+                    loadDashboard();
+                }
+
+            } catch (err) { console.error(err); }
+        }
+
+        const addDeviceForm = document.getElementById('addDeviceForm');
+        if (addDeviceForm) {
+            addDeviceForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                let fVendor = document.getElementById('devVendor').value;
+                if (fVendor === 'Other') fVendor = document.getElementById('devVendorOther').value;
+
+                const newDevice = {
+                    customer: document.getElementById('devCustomer').value,
+                    site: document.getElementById('devSite').value,
+                    vendor: fVendor,
+                    version: document.getElementById('devVersion').value, // <-- EKLENDİ
+                    name: document.getElementById('devName').value,
+                    hostname: document.getElementById('devHostname').value, ipAddress: document.getElementById('devIp').value, gateway: document.getElementById('devGateway').value,
+                    username: document.getElementById('devUsername').value, password: document.getElementById('devPassword').value, visibleTo: document.getElementById('devVisibleTo').value,
+                    serialNumber: document.getElementById('devSerial').value, description: document.getElementById('devDescription').value, isActive: true
+                };
+
+                try {
+                    const res = await fetch(`${API_BASE_URL}/Devices`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newDevice)
+                    });
+                    if (res.ok) {
+                        document.getElementById('addDeviceForm').reset();
+                        document.getElementById('devVendorOther').classList.add('d-none');
+                        bootstrap.Modal.getInstance(document.getElementById('addDeviceModal')).hide();
+                        loadDevices();
+                        Toast.fire({ icon: 'success', title: 'Yeni cihaz eklendi!' });
+                    }
+                    else {
+                        Swal.fire({ title: 'Cihaz Eklenemedi!', text: await res.text(), icon: 'error', background: '#1e1e1e', color: '#fff', confirmButtonColor: '#0dcaf0' });
+                    }
+                } catch (err) { Swal.fire({ title: 'Bağlantı Hatası!', text: 'Sunucuya ulaşılamadı.', icon: 'error', background: '#1e1e1e', color: '#fff', confirmButtonColor: '#0dcaf0' }); }
+            });
+        }
+
+        function openEditModal(id) {
+            const d = currentDevices.find(x => x.id === id);
+            if (!d) return;
+            document.getElementById('editDevVendorOther').classList.add('d-none'); document.getElementById('editDevVendorOther').value = ""; document.getElementById('editDevVendorOther').required = false;
+            document.getElementById('editDevId').value = d.id;
+            document.getElementById('editDevCustomer').value = d.customer;
+            document.getElementById('editDevSite').value = d.site || "";
+            document.getElementById('editDevVendor').value = d.vendor;
+            document.getElementById('editDevVersion').value = d.version || ""; // <-- EKLENDİ
+            document.getElementById('editDevName').value = d.name; document.getElementById('editDevHostname').value = d.hostname || ""; document.getElementById('editDevIp').value = d.ipAddress;
+            document.getElementById('editDevGateway').value = d.gateway || ""; document.getElementById('editDevVisibleTo').value = d.visibleTo; document.getElementById('editDevUsername').value = d.username;
+            document.getElementById('editDevPassword').value = "";
+            document.getElementById('editDevSerial').value = d.serialNumber || ""; document.getElementById('editDevDescription').value = d.description || ""; document.getElementById('editDevIsActive').value = d.isActive ? "true" : "false";
+            new bootstrap.Modal(document.getElementById('editDeviceModal')).show();
+        }
+
+        const editDeviceForm = document.getElementById('editDeviceForm');
+        if (editDeviceForm) {
+            editDeviceForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const id = document.getElementById('editDevId').value;
+                let fVendor = document.getElementById('editDevVendor').value;
+                if (fVendor === 'Other') fVendor = document.getElementById('editDevVendorOther').value;
+
+                const updatedDev = {
+                    id: parseInt(id), isActive: document.getElementById('editDevIsActive').value === "true",
+                    customer: document.getElementById('editDevCustomer').value,
+                    site: document.getElementById('editDevSite').value,
+                    vendor: fVendor,
+                    version: document.getElementById('editDevVersion').value, // <-- EKLENDİ
+                    name: document.getElementById('editDevName').value, hostname: document.getElementById('editDevHostname').value, ipAddress: document.getElementById('editDevIp').value,
+                    gateway: document.getElementById('editDevGateway').value, visibleTo: document.getElementById('editDevVisibleTo').value, username: document.getElementById('editDevUsername').value,
+                    password: document.getElementById('editDevPassword').value,
+                    serialNumber: document.getElementById('editDevSerial').value, description: document.getElementById('editDevDescription').value
+                };
+                try {
+                    const res = await fetch(`${API_BASE_URL}/Devices/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updatedDev)
+                    });
+                    if (res.ok) {
+                        bootstrap.Modal.getInstance(document.getElementById('editDeviceModal')).hide();
+                        loadDevices();
+                        Toast.fire({ icon: 'success', title: 'Cihaz başarıyla güncellendi!' });
+                    } else {
+                        Swal.fire({ title: 'Hata!', text: await res.text(), icon: 'error', background: '#1e1e1e', color: '#fff', confirmButtonColor: '#0dcaf0' });
+                    }
+                } catch (err) { Swal.fire({ title: 'Hata!', text: 'Sunucu hatası.', icon: 'error', background: '#1e1e1e', color: '#fff', confirmButtonColor: '#0dcaf0' }); }
+            });
+        }
+
+        function openTransferDevModal(id) { document.getElementById('transDevId').value = id; new bootstrap.Modal(document.getElementById('transferDeviceModal')).show(); }
+
+        const transferDeviceForm = document.getElementById('transferDeviceForm');
+        if (transferDeviceForm) {
+            transferDeviceForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const id = document.getElementById('transDevId').value; const dept = document.getElementById('transDevDept').value;
+                try {
+                    const res = await fetch(`${API_BASE_URL}/Devices/${id}/transfer`, {
+                        method: 'PUT',
+                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ visibleTo: dept })
+                    });
+                    if (res.ok) {
+                        bootstrap.Modal.getInstance(document.getElementById('transferDeviceModal')).hide();
+                        loadDevices();
+                        Toast.fire({ icon: 'success', title: 'Cihaz devredildi!' });
+                    }
+                } catch (e) { Toast.fire({ icon: 'error', title: 'Devretme başarısız!' }); }
+            });
+        }
+
+        async function deleteDevice(id, name) {
+            const result = await Swal.fire({
+                title: 'Emin misiniz?',
+                text: `'${name}' adlı cihazı kalıcı olarak siliyorsunuz!`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Evet, Sil!',
+                cancelButtonText: 'İptal',
+                background: '#1e1e1e',
+                color: '#fff'
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/Devices/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    loadDevices();
+                    Toast.fire({ icon: 'success', title: 'Cihaz başarıyla silindi.' });
+                } else {
+                    Toast.fire({ icon: 'error', title: 'Silme işlemi başarısız.' });
+                }
+            } catch (e) { Toast.fire({ icon: 'error', title: 'Bağlantı hatası.' }); }
+        }
+
+        function toggleAllCheckboxes() {
+            const isChecked = document.getElementById('selectAllCheckbox').checked;
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            checkboxes.forEach(cb => {
+                // Sadece ekranda gözüken (filtrelenmemiş) satırları işaretle
+                if (cb.closest('tr').style.display !== 'none') {
+                    cb.checked = isChecked;
+                }
+            });
+        }
+
+        async function deleteSelectedDevices() {
+            const selectedIds = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.value);
+
+            if (selectedIds.length === 0) {
+                alert("Silmek için tablodan en az bir cihaz seçmelisiniz.");
+                return;
+            }
+
+            let confirmText = prompt(`DİKKAT! Seçtiğiniz ${selectedIds.length} adet cihazı sileceksiniz.\nEmin misiniz? Onaylamak için büyük harflerle SİL yazın:`);
+            if (confirmText !== "SİL") {
+                alert("İşlem iptal edildi.");
+                return;
+            }
+
+            const btn = document.querySelector('button[onclick="deleteSelectedDevices()"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Siliniyor...';
+            btn.disabled = true;
+
+            let successCount = 0;
+            let failCount = 0;
+
+            for (let id of selectedIds) {
+                try {
+                    const res = await fetch(`${API_BASE_URL}/Devices/${id}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (res.ok) successCount++; else failCount++;
+                } catch (e) { failCount++; }
+            }
+
+            alert(`Toplu Silme İşlemi Bitti!\nBaşarıyla Silinen: ${successCount}\nSilinemeyen: ${failCount}`);
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            loadDevices();
+        }
+
+        async function viewPassword(id, btn) {
+            try {
+                const res = await fetch(`${API_BASE_URL}/Devices/${id}/password`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                // Token süresi dolduysa sistemi çökertmek yerine kibarca dışarı atar
+                if (res.status === 401) {
+                    alert("Oturum süreniz dolmuş! Lütfen güvenliğiniz için tekrar giriş yapın.");
+                    logout();
+                    return;
+                }
+
+                if (res.ok) {
+                    const data = await res.json();
+                    const container = btn.parentElement;
+
+                    // Orijinal butonları (edit, transfer, delete) kaybetmemek için base64 ile paketliyoruz
+                    const originalHtml = btoa(unescape(encodeURIComponent(container.innerHTML)));
+
+                    // Ekrana şifreyi basıyoruz ve tıklanınca 'restoreButtons' fonksiyonunu çağırıyoruz
+                    container.innerHTML = `<span class="password-masked" title="Gizlemek ve işlemlere dönmek için tıklayın" onclick="restoreButtons(this, '${originalHtml}')">${data.password}</span>`;
+                } else {
+                    alert("Şifre çözme başarısız.");
+                }
+            } catch (e) { alert("Bağlantı hatası."); }
+        }
+
+        // Şifreye tıklanınca orijinal butonları tablodaki yerine geri getiren fonksiyon
+        function restoreButtons(spanEl, encodedHtml) {
+            spanEl.parentElement.innerHTML = decodeURIComponent(escape(atob(encodedHtml)));
+        }
+
+        async function loadEmployees() {
+            const tbody = document.getElementById('employeesTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-info"><i class="fa-solid fa-spinner fa-spin"></i> Personel listesi çekiliyor...</td></tr>';
+            try {
+                const res = await fetch(`${API_BASE_URL}/Auth/users`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) throw new Error("Veri alınamadı");
+                const users = await res.json(); tbody.innerHTML = '';
+
+                const activeUsers = users.filter(u => u.isApproved !== false);
+
+                activeUsers.forEach(u => {
+                    let roleBadge = u.role === "MainAdmin" ? "bg-danger" : (u.role.includes("Lider") ? "bg-warning text-dark" : "bg-info text-dark");
+                    let deptBadge = u.department === "Cyber Security" ? "badge-cyber" : (u.department === "Network" ? "badge-network" : "bg-secondary");
+
+                    let editBtn = userRole === "MainAdmin" ? `<button class="btn btn-sm btn-outline-warning ms-3" onclick="openEditRoleModal('${u.username}', '${u.role}')" title="Rolü Değiştir"><i class="fa-solid fa-pen"></i></button>` : "";
+
+                    tbody.innerHTML += `<tr><td><b class="text-white">${u.firstName} ${u.lastName}</b></td><td><span class="text-info">${u.username}</span></td><td><span class="badge ${deptBadge}">${u.department}</span></td><td><span class="badge ${roleBadge} fw-bold">${u.role}</span> ${editBtn}</td></tr>`;
+                });
+            } catch (e) { tbody.innerHTML = `<tr><td colspan="4" class="text-danger text-center">Bağlantı hatası! API'yi kontrol edin.</td></tr>`; }
+        }
+
+        async function loadApprovals() {
+            const tbody = document.getElementById('approvalsTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-warning"><i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor...</td></tr>';
+            try {
+                const res = await fetch(`${API_BASE_URL}/Auth/pending-users`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) return;
+                const users = await res.json();
+                if (users.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="text-center text-secondary py-4"><i class="fa-solid fa-check-circle fs-5 mb-2"></i><br>Bekleyen onay bulunmuyor.</td></tr>'; return; }
+                tbody.innerHTML = '';
+                users.forEach(u => {
+                    tbody.innerHTML += `<tr><td>${u.firstName} ${u.lastName}</td><td><b class="text-info">${u.username}</b></td><td>${u.department}</td><td><span class="badge bg-secondary">${u.role}</span></td>
+                    <td class="text-end"><button class="btn btn-sm btn-success me-2 fw-bold" onclick="processApproval('${u.username}', 'approve')"><i class="fa-solid fa-check"></i> Onayla</button><button class="btn btn-sm btn-danger fw-bold" onclick="processApproval('${u.username}', 'reject')"><i class="fa-solid fa-xmark"></i> Reddet</button></td></tr>`;
+                });
+            } catch (e) { tbody.innerHTML = `<tr><td colspan="5" class="text-danger text-center">Sunucu bağlantı hatası!</td></tr>`; }
+        }
+
+        async function processApproval(username, action) {
+            const url = action === 'approve' ? `${API_BASE_URL}/Auth/approve-user/${username}` : `${API_BASE_URL}/Auth/reject-user/${username}`;
+            const method = action === 'approve' ? 'PUT' : 'DELETE';
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    Toast.fire({ icon: 'success', title: action === 'approve' ? 'Kullanıcı onaylandı!' : 'Talep reddedildi.' });
+                    loadApprovals();
+                    loadEmployees();
+                } else {
+                    Swal.fire({ title: 'Hata!', text: 'İşlem başarısız.', icon: 'error', background: '#1e1e1e', color: '#fff', confirmButtonColor: '#0dcaf0' });
+                }
+            } catch (e) { Toast.fire({ icon: 'error', title: 'Bağlantı hatası!' }); }
+        }
+
+        const transferRoleForm = document.getElementById('transferRoleForm');
+        if (transferRoleForm) {
+            transferRoleForm.addEventListener('submit', async function (e) {
+                e.preventDefault(); const target = document.getElementById('transRoleTarget').value;
+
+                const result = await Swal.fire({
+                    title: 'DİKKAT!',
+                    text: `Tüm yetkilerinizi ${target} kullanıcısına devrediyorsunuz. Bu işlem geri alınamaz!`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Evet, Devret!',
+                    cancelButtonText: 'İptal',
+                    background: '#1e1e1e', color: '#fff'
+                });
+
+                if (!result.isConfirmed) return;
+
+                try {
+                    const res = await fetch(`${API_BASE_URL}/Auth/transfer-role/${target}`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (res.ok) {
+                        Swal.fire({ title: 'Başarılı!', text: 'Yetki devredildi! Çıkış yapılıyor...', icon: 'success', background: '#1e1e1e', color: '#fff', confirmButtonColor: '#0dcaf0' })
+                            .then(() => logout());
+                    } else {
+                        Swal.fire({ title: 'Hata!', text: await res.text(), icon: 'error', background: '#1e1e1e', color: '#fff', confirmButtonColor: '#0dcaf0' });
+                    }
+                } catch (e) { Toast.fire({ icon: 'error', title: 'Bağlantı hatası!' }); }
+            });
+        }
+
+        function openEditRoleModal(username, currentRole) {
+            document.getElementById('editRoleUsername').value = username;
+            document.getElementById('editRoleDisplayUsername').value = username;
+            document.getElementById('editRoleSelect').value = currentRole;
+            document.getElementById('editRoleNewPassword').value = "";
+            new bootstrap.Modal(document.getElementById('editRoleModal')).show();
+        }
+
+        const editRoleForm = document.getElementById('editRoleForm');
+        if (editRoleForm) {
+            editRoleForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const username = document.getElementById('editRoleUsername').value;
+
+                const payload = {
+                    newRole: document.getElementById('editRoleSelect').value,
+                    newPassword: document.getElementById('editRoleNewPassword').value
+                };
+
+                try {
+                    const res = await fetch(`${API_BASE_URL}/Auth/update-role/${username}`, {
+                        method: 'PUT',
+                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (res.ok) {
+                        Toast.fire({ icon: 'success', title: 'Personel güncellendi!' });
+                        bootstrap.Modal.getInstance(document.getElementById('editRoleModal')).hide();
+                        loadEmployees();
+                        if (!document.getElementById('view-logs').classList.contains('d-none')) loadLogs();
+                    } else {
+                        Swal.fire({ title: 'Hata!', text: await res.text(), icon: 'error', background: '#1e1e1e', color: '#fff', confirmButtonColor: '#0dcaf0' });
+                    }
+                } catch (err) { Toast.fire({ icon: 'error', title: 'Sunucuya ulaşılamadı!' }); }
+            });
+        }
+
+        const adminRegisterForm = document.getElementById('adminRegisterForm');
+        if (adminRegisterForm) {
+            adminRegisterForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const data = {
+                    username: document.getElementById('regUsername').value,
+                    firstName: document.getElementById('regFirstName').value,
+                    lastName: document.getElementById('regLastName').value,
+                    department: document.getElementById('regDept').value,
+                    role: document.getElementById('regRole').value,
+                    password: document.getElementById('regPassword').value
+                };
+
+                try {
+                    const res = await fetch(`${API_BASE_URL}/Auth/admin-register`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (res.ok) {
+                        Swal.fire({ title: 'Başarılı!', text: 'Yerel hesap açıldı ve yetkilendirildi.', icon: 'success', background: '#1e1e1e', color: '#fff', confirmButtonColor: '#0dcaf0' });
+                        bootstrap.Modal.getInstance(document.getElementById('adminRegisterModal')).hide();
+                        document.getElementById('adminRegisterForm').reset();
+                        loadEmployees();
+                        if (!document.getElementById('view-logs').classList.contains('d-none')) loadLogs();
+                    } else {
+                        Swal.fire({ title: 'Hata!', text: await res.text(), icon: 'error', background: '#1e1e1e', color: '#fff', confirmButtonColor: '#0dcaf0' });
+                    }
+                } catch (err) { Toast.fire({ icon: 'error', title: 'Sunucuya ulaşılamadı!' }); }
+            });
+        }
+
+        const addStaffForm = document.getElementById('addStaffForm');
+        if (addStaffForm) {
+            addStaffForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                let finalDept = document.getElementById('staffDept').value;
+                if (finalDept === 'Other') {
+                    finalDept = document.getElementById('otherDeptName').value;
+                }
+
+                const staffBtn = e.target.querySelector('button[type="submit"]');
+                const originalText = staffBtn.innerHTML;
+                staffBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Ekleniyor...';
+                staffBtn.disabled = true;
+
+                const staffData = {
+                    username: document.getElementById('staffUsername').value,
+                    firstName: document.getElementById('staffFirstName').value,
+                    lastName: document.getElementById('staffLastName').value,
+                    department: finalDept,
+                    role: document.getElementById('staffRole').value
+                };
+
+                try {
+                    const res = await fetch(`${API_BASE_URL}/Auth/register-staff`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify(staffData)
+                    });
+
+                    if (res.ok) {
+                        Swal.fire({ title: 'Başarılı!', text: 'Personel yetkilendirildi.', icon: 'success', background: '#1e1e1e', color: '#fff', confirmButtonColor: '#0dcaf0' });
+                        bootstrap.Modal.getInstance(document.getElementById('addStaffModal')).hide();
+                        document.getElementById('addStaffForm').reset();
+                        document.getElementById('otherDeptGroup').classList.add('d-none');
+                        loadEmployees();
+                    } else {
+                        Swal.fire({ title: 'Hata!', text: await res.text(), icon: 'error', background: '#1e1e1e', color: '#fff', confirmButtonColor: '#0dcaf0' });
+                    }
+                } catch (err) { Toast.fire({ icon: 'error', title: 'Sunucuya ulaşılamadı!' }); }
+                finally { staffBtn.innerHTML = originalText; staffBtn.disabled = false; }
+            });
+        }
+
+        let dtLogs = null; // Tabloyu hafızada tutmak için
+
+        async function loadLogs() {
+            const tbody = document.getElementById('logsTableBody');
+            if (!tbody) return;
+
+            // Kütüphane gelmediyse bekle
+            if (typeof $ === 'undefined' || !$.fn.DataTable) {
+                console.log("DataTable bekleniyor...");
+                setTimeout(loadLogs, 300);
+                return;
+            }
+
+            // Varsa temizle
+            if ($.fn.DataTable.isDataTable('#logsTable')) {
+                $('#logsTable').DataTable().destroy();
+            }
+
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center">Loglar yükleniyor...</td></tr>';
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/Logs`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) throw new Error("Log verisi alınamadı");
+                const logs = await res.json();
+
+                tbody.innerHTML = '';
+                logs.forEach(l => {
+                    const date = new Date(l.actionDate).toLocaleString('tr-TR');
+                    let cleanAction = l.action.split(' - ')[0].trim();
+                    tbody.innerHTML += `<tr><td>${date}</td><td>${l.username}</td><td>${cleanAction}</td><td>${l.details || '-'}</td></tr>`;
+                });
+
+                // Tabloyu güvenle başlat
+                // Tabloyu güvenle başlat (CORS hatasını önlemek için dil dosyası içeri gömüldü)
+                dtLogs = $('#logsTable').DataTable({
+                    destroy: true,
+                    language: {
+                        "sDecimal": ",",
+                        "sEmptyTable": "Tabloda herhangi bir veri mevcut değil",
+                        "sInfo": "_TOTAL_ kayıttan _START_ - _END_ arasındaki kayıtlar gösteriliyor",
+                        "sInfoEmpty": "Kayıt yok",
+                        "sInfoFiltered": "(_MAX_ kayıt içerisinden bulunan)",
+                        "sInfoPostFix": "",
+                        "sInfoThousands": ".",
+                        "sLengthMenu": "Sayfada _MENU_ kayıt göster",
+                        "sLoadingRecords": "Yükleniyor...",
+                        "sProcessing": "İşleniyor...",
+                        "sSearch": "Ara:",
+                        "sZeroRecords": "Eşleşen kayıt bulunamadı",
+                        "oPaginate": {
+                            "sFirst": "İlk",
+                            "sLast": "Son",
+                            "sNext": "Sonraki",
+                            "sPrevious": "Önceki"
+                        },
+                        "oAria": {
+                            "sSortAscending": ": artan sütun sıralamasını aktifleştir",
+                            "sSortDescending": ": azalan sütun sıralamasını aktifleştir"
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error("LOG HATA:", e);
+                tbody.innerHTML = '<tr><td colspan="4" class="text-danger">Loglar çekilemedi. API\'yi kontrol et.</td></tr>';
+            }
+        }
+
+        // Seçilen filtrelere göre DataTables içinden arama yapar
+        function applyLogFilters() {
+            if (!dtLogs) return;
+            const user = document.getElementById('logUserFilter').value;
+            const action = document.getElementById('logActionFilter').value;
+
+            // Sütun İndeksleri: 1 = Kullanıcı, 2 = İşlem Tipi
+            dtLogs.column(1).search(user);
+            dtLogs.column(2).search(action);
+            dtLogs.draw();
+        }
+
+        async function exportSyslog() {
+            try {
+                const btn = document.querySelector('button[onclick="exportSyslog()"]'); const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> İndiriliyor...'; btn.disabled = true;
+                const startDate = document.getElementById('logStartDate').value; const endDate = document.getElementById('logEndDate').value;
+                let url = `${API_BASE_URL}/Logs/export/syslog`; const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate); if (endDate) params.append('endDate', endDate + 'T23:59:59');
+                if (params.toString()) { url += '?' + params.toString(); }
+                const res = await fetch(url, {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) throw new Error("Dosya oluşturulamadı.");
+                const blob = await res.blob(); const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = downloadUrl;
+                let docName = "GH_Envanter_Loglar_Tumu"; if (startDate || endDate) docName = `GH_Envanter_Loglar_Filtreli`;
+                a.download = `${docName}_${new Date().toISOString().slice(0, 10)}.syslog`; document.body.appendChild(a); a.click(); a.remove(); window.URL.revokeObjectURL(downloadUrl);
+                btn.innerHTML = originalText; btn.disabled = false;
+            } catch (e) {
+                Swal.fire({ title: 'İndirme Başarısız!', text: e.message, icon: 'error', background: '#1e1e1e', color: '#fff', confirmButtonColor: '#0dcaf0' });
+            }
+        }
+
+        // === AKILLI EXCEL YÜKLEME MOTORU (BULDOZER) ===
+        async function importFromExcel(event) {
+            const file = event.target.files[0]; if (!file) return;
+            const excelBtn = document.querySelector('button[onclick="document.getElementById(\'excelFileInput\').click()"]');
+            const originalText = excelBtn.innerHTML;
+            excelBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor...';
+            excelBtn.disabled = true;
+
+            const reader = new FileReader();
+            reader.onload = async function (e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+
+                    let targetSheetName = workbook.SheetNames[0];
+                    for (let name of workbook.SheetNames) {
+                        let lowerName = name.toLowerCase();
+                        if (lowerName.includes("all") || lowerName.includes("tüm") || lowerName.includes("tum")) {
+                            targetSheetName = name;
+                            break;
+                        }
+                    }
+
+                    const worksheet = workbook.Sheets[targetSheetName];
+                    const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+
+                    if (rows.length === 0) {
+                        Swal.fire({ title: 'Hata!', text: 'Excel dosyası boş!', icon: 'warning', background: '#1e1e1e', color: '#fff', confirmButtonColor: '#0dcaf0' });
+                        resetExcelButton(excelBtn, originalText);
+                        return;
+                    }
+
+                    const normalize = (str) => {
+                        return (str || "").toString()
+                            .replace(/İ/g, "i").replace(/I/g, "i").replace(/ı/g, "i")
+                            .replace(/Ş/g, "s").replace(/ş/g, "s")
+                            .replace(/Ğ/g, "g").replace(/ğ/g, "g")
+                            .replace(/Ü/g, "u").replace(/ü/g, "u")
+                            .replace(/Ö/g, "o").replace(/ö/g, "o")
+                            .replace(/Ç/g, "c").replace(/ç/g, "c")
+                            .toLowerCase().trim();
+                    };
+
+                    let colMap = { customer: -1, hostname: -1, type: -1, ip1: -1, ip2: -1, env: -1, access: -1, tsIp: -1, desc: -1, gateway: -1, serial: -1, user: -1, pass: -1, dept: -1, vendor: -1 };
+                    let headerRowIndex = 0;
+
+                    for (let i = 0; i < Math.min(10, rows.length); i++) {
+                        let r = rows[i];
+                        if (!r) continue;
+
+                        for (let c = 0; c < r.length; c++) {
+                            let rawText = (r[c] || "").toString();
+                            let text = normalize(rawText).replace(/\s+/g, "");
+                            if (!text) continue;
+
+                            if (text.includes("musteri")) colMap.customer = c;
+                            if (text.includes("hostname") || text.includes("cihazad")) colMap.hostname = c;
+                            if (text === "cihazturu" || text.includes("cihaztur") || text === "tur" || text === "tip") colMap.type = c;
+                            if (text.includes("netscaler-01") || text.includes("bilesenad") || text === "ipadresi" || text === "ip") {
+                                if (colMap.ip1 === -1) colMap.ip1 = c;
+                            }
+                            if (text.includes("netscaler-02") || text.includes("node2")) colMap.ip2 = c;
+                            if (text === "ortami" || text === "ortam" || text.includes("bulundugudc")) colMap.env = c;
+                            if (text.includes("erisim")) colMap.access = c;
+                            if (text.includes("terminalserver") || text.includes("tsip")) colMap.tsIp = c;
+                            if ((text.includes("aciklama") || text.includes("description")) && !text.includes("erisim")) colMap.desc = c;
+                            if (text.includes("gateway")) colMap.gateway = c;
+                            if (text.includes("serino") || text.includes("serial")) colMap.serial = c;
+                            if (text.includes("kullanici") || text.includes("username")) colMap.user = c;
+                            if (text.includes("departman") || text.includes("department")) colMap.dept = c;
+                            if (text === "marka" || text === "vendor") colMap.vendor = c;
+
+                            if (text.includes("sifre") || text === "pass" || text.includes("password") || text.includes("parola")) {
+                                colMap.pass = c;
+                            }
+                        }
+
+                        if (colMap.customer !== -1 && colMap.hostname !== -1 && headerRowIndex === 0) {
+                            headerRowIndex = i;
+                        }
+                    }
+
+                    if (colMap.ip1 !== -1 && colMap.ip2 === -1) colMap.ip2 = colMap.ip1 + 1;
+
+                    let successCount = 0; let failCount = 0;
+                    let lastCustomer = "Bilinmiyor";
+
+                    console.log("----- YÜKLEME BAŞLADI -----");
+
+                    for (let i = headerRowIndex + 1; i < rows.length; i++) {
+                        let row = rows[i];
+                        if (!row || row.length < 2) continue;
+
+                        let strRow = row.map(c => normalize(c)).join("").replace(/\s+/g, "");
+                        if (strRow.includes("netscaler-01") || strRow.includes("netscaler-02") || strRow.includes("musteriadi")) continue;
+
+                        let getVal = (colIndex) => {
+                            if (colIndex === -1 || colIndex >= row.length) return "";
+                            return row[colIndex] ? row[colIndex].toString().trim() : "";
+                        };
+
+                        let rawCustomer = getVal(colMap.customer);
+                        if (rawCustomer && rawCustomer !== "-" && normalize(rawCustomer) !== "x") {
+                            lastCustomer = rawCustomer;
+                        }
+                        let customer = lastCustomer;
+
+                        let hostname = getVal(colMap.hostname);
+                        if (hostname === "-" || normalize(hostname) === "x" || normalize(hostname) === "yok") hostname = "";
+
+                        let ipAddress = getVal(colMap.ip1);
+                        let nip = normalize(ipAddress);
+
+                        if (!hostname && !ipAddress) continue;
+
+                        let name = hostname;
+                        if (!name) name = `${customer} Cihazi (Satir ${i})`;
+
+                        if (!ipAddress || ipAddress === "-" || nip.includes("yok") || nip === "x") {
+                            ipAddress = `10.255.255.${i}`;
+                        } else {
+                            let match = ipAddress.match(/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/);
+                            if (match) ipAddress = match[0];
+                            else ipAddress = ipAddress.replace(/https?:\/\//g, '').replace(/\s/g, '').split('/')[0].split(',')[0].trim();
+
+                            if (ipAddress.length > 20) ipAddress = ipAddress.substring(0, 20);
+                        }
+
+                        let vendorStr = getVal(colMap.vendor);
+                        let vendor = vendorStr ? vendorStr : "Other";
+                        if (vendor === "Other" && (targetSheetName.toLowerCase().includes("citrix") || targetSheetName.toLowerCase().includes("all"))) {
+                            vendor = "Citrix";
+                        }
+                        let vLow = normalize(vendor);
+                        if (vLow.includes("check point")) vendor = "Check Point";
+                        else if (vLow.includes("cisco")) vendor = "Cisco";
+                        else if (vLow.includes("dell")) vendor = "Dell";
+                        else if (vLow.includes("fortinet")) vendor = "Fortinet";
+                        else if (vLow.includes("palo alto")) vendor = "Palo Alto Networks";
+
+                        let visibleTo = getVal(colMap.dept);
+                        if (!visibleTo || visibleTo === "-" || visibleTo.trim() === "") {
+                            visibleTo = "Cyber Security";
+                        }
+
+                        let node2 = getVal(colMap.ip2);
+                        let match2 = node2.match(/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/);
+                        if (match2) node2 = match2[0];
+
+                        let tur = getVal(colMap.type);
+                        let ortam = getVal(colMap.env);
+                        let tsIp = getVal(colMap.tsIp);
+                        let erisim = getVal(colMap.access);
+                        let directDesc = getVal(colMap.desc);
+
+                        let textParts = [];
+
+                        if (node2 && node2 !== "-" && normalize(node2) !== "x" && !normalize(node2).includes("yok")) {
+                            textParts.push(`VM02 IP: ${node2}`);
+                        }
+                        if (tur && tur !== "-" && normalize(tur) !== "x" && !normalize(tur).includes("yok") && !normalize(tur).includes("tanimsiz")) {
+                            textParts.push(`Tür: ${tur}`);
+                        }
+                        if (ortam && ortam !== "-" && normalize(ortam) !== "x" && !normalize(ortam).includes("yok") && !normalize(ortam).includes("tanimsiz")) {
+                            textParts.push(`Ortam: ${ortam}`);
+                        }
+                        if (tsIp && tsIp !== "-" && normalize(tsIp) !== "x" && !normalize(tsIp).includes("yok") && !normalize(tsIp).includes("tanimsiz")) {
+                            textParts.push(`TS IP: ${tsIp}`);
+                        }
+                        if (erisim && erisim !== "-" && normalize(erisim) !== "x" && !normalize(erisim).includes("yok") && !normalize(erisim).includes("tanimsiz")) {
+                            textParts.push(`Erişim: ${erisim}`);
+                        }
+
+                        if (directDesc && directDesc !== "-" && normalize(directDesc) !== "x") textParts.push(directDesc);
+
+                        let finalDesc = textParts.length > 0 ? textParts.join(" | ") : "Excel'den toplu eklendi";
+
+                        let excelPass = getVal(colMap.pass);
+                        let finalPass = "123456";
+                        if (excelPass && excelPass !== "-" && normalize(excelPass) !== "x" && excelPass.trim() !== "") {
+                            finalPass = excelPass.trim();
+                        }
+
+                        const newDevice = {
+                            customer: customer,
+                            vendor: vendor,
+                            name: name,
+                            hostname: hostname,
+                            ipAddress: ipAddress,
+                            gateway: getVal(colMap.gateway) || `192.168.255.${i}`,
+                            visibleTo: visibleTo,
+                            serialNumber: getVal(colMap.serial) || `SN-AUTO-${i}`,
+                            username: getVal(colMap.user) || `admin_${i}`,
+                            password: finalPass,
+                            description: finalDesc,
+                            isActive: true
+                        };
+
+                        const res = await fetch(`${API_BASE_URL}/Devices`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                            body: JSON.stringify(newDevice)
+                        });
+
+                        if (res.ok) {
+                            successCount++;
+                            console.log(`[BAŞARILI] Satır ${i}: ${newDevice.name} eklendi.`);
+                        } else {
+                            failCount++;
+                            let errText = await res.text();
+                            console.error(`[HATA] Satır ${i} eklenemedi! API Cevabı:`, errText);
+                        }
+                    }
+
+                    console.log("----- YÜKLEME BİTTİ -----");
+                    Swal.fire({
+                        title: 'Yükleme Tamamlandı!',
+                        html: `Başarıyla Eklenen: <b>${successCount}</b><br>Başarısız (Aynı IP/İsim): <b>${failCount}</b>`,
+                        icon: 'success',
+                        background: '#1e1e1e', color: '#fff', confirmButtonColor: '#0dcaf0'
+                    });
+                    loadDevices();
+                } catch (err) {
+                    console.error("KRİTİK HATA:", err);
+                    Swal.fire({ title: 'Hata!', text: 'Excel okunurken bir hata oluştu.', icon: 'error', background: '#1e1e1e', color: '#fff', confirmButtonColor: '#0dcaf0' });
+                } finally {
+                    resetExcelButton(excelBtn, originalText);
+                    document.getElementById('excelFileInput').value = '';
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function exportToExcel() {
+            if (currentDevices.length === 0) {
+                Swal.fire({ title: 'Bilgi', text: 'Dışa aktarılacak cihaz bulunamadı!', icon: 'info', background: '#1e1e1e', color: '#fff', confirmButtonColor: '#0dcaf0' });
+                return;
+            }
+
+            const exportData = currentDevices.map(d => ({
+                "ID": d.id,
+                "Müşteri": d.customer,
+                "Marka": d.vendor,
+                "Cihaz Adı": d.name,
+                "Hostname": d.hostname || "-",
+                "IP Adresi": d.ipAddress,
+                "Gateway": d.gateway || "-",
+                "Departman": d.visibleTo,
+                "Seri No": d.serialNumber || "-",
+                "Kullanıcı Adı": d.username,
+                "Açıklama": d.description || "-",
+                "Durum": d.isActive ? "Aktif" : "Pasif"
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(exportData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Envanter");
+
+            worksheet['!cols'] = [
+                { wch: 5 }, { wch: 15 }, { wch: 15 }, { wch: 20 },
+                { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+                { wch: 15 }, { wch: 15 }, { wch: 30 }, { wch: 10 }
+            ];
+
+            const dateStr = new Date().toISOString().slice(0, 10);
+            XLSX.writeFile(workbook, `GH_Envanter_Raporu_${dateStr}.xlsx`);
+            Toast.fire({ icon: 'success', title: 'Rapor başarıyla indirildi!' });
+        }
+
+        let fetchedAdUsers = [];
+        async function loadAdUsersIntoSelect() {
+            const btn = document.getElementById('btnFetchAd');
+            const select = document.getElementById('adUserSelect');
+            const help = document.getElementById('adUserHelp');
+
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+            help.innerText = "AD sunucusuna bağlanılıyor, lütfen bekleyin...";
+            help.className = "text-warning small";
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/LdapSettings/ad-users`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    fetchedAdUsers = await res.json();
+                    select.innerHTML = '<option value="">-- Bir Personel Seçin --</option>';
+
+                    fetchedAdUsers.sort((a, b) => a.firstName.localeCompare(b.firstName));
+
+                    fetchedAdUsers.forEach((u, index) => {
+                        select.innerHTML += `<option value="${index}">${u.firstName} ${u.lastName} (${u.username})</option>`;
+                    });
+
+                    help.innerText = `${fetchedAdUsers.length} personel başarıyla çekildi!`;
+                    help.className = "text-success small fw-bold";
+                } else {
+                    const errText = await res.text();
+                    help.innerText = "Hata: " + errText;
+                    help.className = "text-danger small fw-bold";
+                    Swal.fire({ title: 'Hata!', text: 'AD listesi çekilemedi.', icon: 'error', background: '#1e1e1e', color: '#fff', confirmButtonColor: '#0dcaf0' });
+                }
+            } catch (err) {
+                help.innerText = "Sunucuya ulaşılamadı.";
+                help.className = "text-danger small fw-bold";
+            } finally {
+                btn.innerHTML = '<i class="fa-solid fa-rotate"></i>';
+                btn.disabled = false;
+            }
+        }
+
+        function autofillAdUser() {
+            const select = document.getElementById('adUserSelect');
+            if (select.value === "") {
+                document.getElementById('staffUsername').value = "";
+                document.getElementById('staffFirstName').value = "";
+                document.getElementById('staffLastName').value = "";
+                return;
+            }
+            const selectedUser = fetchedAdUsers[select.value];
+            document.getElementById('staffUsername').value = selectedUser.username;
+            let fName = (selectedUser.firstName || "").trim();
+            let lName = (selectedUser.lastName || "").trim();
+            if (lName === "" && fName.includes(" ")) {
+                let nameParts = fName.split(" ");
+                lName = nameParts.pop();
+                fName = nameParts.join(" ");
+            } else if (lName === "") { lName = "-"; }
+            document.getElementById('staffFirstName').value = fName;
+            document.getElementById('staffLastName').value = lName;
+        }
+
+        function toggleOtherDeptInput() {
+            const deptSelect = document.getElementById('staffDept');
+            const otherGroup = document.getElementById('otherDeptGroup');
+            if (deptSelect.value === 'Other') { otherGroup.classList.remove('d-none'); } else { otherGroup.classList.add('d-none'); }
+        }
+
+        function resetExcelButton(btn, originalText) { btn.innerHTML = originalText; btn.disabled = false; }
+
+        // Gerçek Logout Fonksiyonu
+        function logout() {
+            localStorage.removeItem('jwt_token');
+            window.location.href = 'login.html';
+        }
+
+        // === CANLI SAAT VE SİSTEM PING MOTORU ===
+
+        // 1. Saati her saniye günceller
+        setInterval(() => {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('tr-TR', { hour12: false });
+            document.getElementById('sysClock').innerHTML = `SYS.TIME: <b class="text-white">${timeString}</b> <span class="text-info">| İST</span>`;
+        }, 1000);
+
+        // 2. API ve Active Directory Sağlık Kontrolü
+        async function checkSystemHealth() {
+            if (!token) return;
+
+            // API'nin ayakta olduğunu sadece ana endpointten (Devices) kontrol edelim, 
+            // diğer sayfaları darlamasın (sadece Adminler baksın).
+            try {
+                const apiRes = await fetch(`${API_BASE_URL}/Devices`, { headers: { 'Authorization': `Bearer ${token}` } });
+                document.getElementById('apiStatusDot').className = (apiRes.ok || apiRes.status === 401) ? "text-success" : "text-danger";
+                document.getElementById('apiStatusText').innerText = (apiRes.ok || apiRes.status === 401) ? "ONLINE" : "OFFLINE";
+            } catch (e) { document.getElementById('apiStatusDot').className = "text-danger"; }
+
+            // LDAP kontrolünü tamamen iptal et (Şimdilik)
+            document.getElementById('adStatusDot').style.display = 'none';
+        }
+
+        // Sayfa açılır açılmaz durumu kontrol et, sonra her 30 saniyede bir (30000ms) gizlice ping at
+        setTimeout(checkSystemHealth, 500);
+        setInterval(checkSystemHealth, 30000);
+
+        // Sol Menü Daralt/Genişlet (Toggle)
+        function toggleSidebar() {
+            document.getElementById('leftSidebar').classList.toggle('collapsed');
+        }
+
+        // === 24 SAAT HAREKETSİZLİK (IDLE) TIMEOUT ===
+        let idleTime = 0;
+        const IDLE_LIMIT = 24 * 60 * 60 * 1000; // 24 Saat (Milisaniye)
+
+        function resetIdleTimer() {
+            idleTime = Date.now();
+            localStorage.setItem('lastActivity', idleTime);
+        }
+
+        // Kullanıcı sayfada hareket ettikçe süreyi sıfırlar
+        window.onload = resetIdleTimer;
+        document.onmousemove = resetIdleTimer;
+        document.onkeypress = resetIdleTimer;
+        document.onclick = resetIdleTimer;
+        document.onscroll = resetIdleTimer;
+
+        // Her 1 dakikada bir kontrol eder
+        setInterval(() => {
+            if (!token) return; // Zaten giriş yapılmamışsa pas geç
+            const lastActive = localStorage.getItem('lastActivity') || Date.now();
+            if (Date.now() - lastActive >= IDLE_LIMIT) {
+                Swal.fire({
+                    title: 'Oturum Zaman Aşımı',
+                    text: '24 saattir işlem yapmadığınız için güvenliğiniz amacıyla çıkış yapıldı.',
+                    icon: 'warning',
+                    background: '#1e1e1e', color: '#fff', confirmButtonColor: '#0dcaf0',
+                    allowOutsideClick: false
+                }).then(() => logout());
+            }
+        }, 60000);
+
+    </script>
+</body>
+
+</html>

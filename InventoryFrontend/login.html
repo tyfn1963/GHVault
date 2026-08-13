@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="tr" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GH Vault | Giriş</title>
+    <link href="./login/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./login/css/all.min.css">
+    
+    <script>
+        document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('theme') || 'dark');
+    </script>
+
+    <style>
+        body {
+            background-color: #121212;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-card {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 15px;
+            width: 100%;
+            max-width: 400px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .brand-logo {
+            color: #0dcaf0;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .form-control, .form-select {
+            background-color: #2a2a2a;
+            border: 1px solid #444;
+            color: white;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #2a2a2a;
+            color: white;
+            border-color: #0dcaf0;
+            box-shadow: 0 0 0 0.25rem rgba(13, 202, 240, 0.25);
+        }
+        .btn-info {
+            background-color: #0dcaf0;
+            border: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .btn-info:hover {
+            background-color: #0aa3c2;
+            transform: translateY(-2px);
+        }
+
+        /* === LIGHT MODE KURALLARI (LOGIN İÇİN) === */
+        [data-bs-theme="light"] body { background-color: #f4f6f9; }
+        [data-bs-theme="light"] .login-card { background-color: #ffffff; border-color: #dee2e6; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        [data-bs-theme="light"] .brand-logo .text-white { color: #333333 !important; }
+        [data-bs-theme="light"] .form-control, 
+        [data-bs-theme="light"] .form-select { background-color: #ffffff; color: #333333; border-color: #ced4da; }
+        [data-bs-theme="light"] .form-control:focus,
+        [data-bs-theme="light"] .form-select:focus { background-color: #ffffff; color: #333333; border-color: #0dcaf0; }
+        [data-bs-theme="light"] .input-group-text { background-color: #f8f9fa !important; border-color: #ced4da !important; color: #6c757d !important; }
+        [data-bs-theme="light"] .btn-outline-light { color: #333333; border-color: #ced4da; }
+        [data-bs-theme="light"] .btn-outline-light:hover { background-color: #f8f9fa; color: #000; }
+        [data-bs-theme="light"] .modal-content { background-color: #ffffff !important; color: #333333 !important; border-color: #ced4da !important; }
+        [data-bs-theme="light"] .modal-header { border-bottom-color: #ced4da !important; }
+        [data-bs-theme="light"] .modal-footer { border-top-color: #ced4da !important; }
+        [data-bs-theme="light"] .btn-close-white { filter: invert(1) grayscale(100%) brightness(200%); }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <div class="text-center mb-4">
+        <img src="glasshouse-logo.png" alt="GlassHouse" style="max-height: 90px;" onerror="this.src='https://via.placeholder.com/250x90/1e1e1e/0dcaf0?text=GHVault'">
+        <h4 class="brand-logo mt-3">GlassHouse <span class="text-white">VAULT</span></h4>
+    </div>
+
+    <form id="loginForm" onsubmit="login(event)">
+        <div class="mb-3">
+            <label class="form-label small text-secondary">Kullanıcı Adı</label>
+            <div class="input-group">
+                <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fa-solid fa-user"></i></span>
+                <input type="text" id="username" class="form-control" placeholder="Kullanıcı adınız..." required>
+            </div>
+        </div>
+        <div class="mb-4">
+            <label class="form-label small text-secondary">Şifre</label>
+            <div class="input-group">
+                <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fa-solid fa-key"></i></span>
+                <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+            </div>
+        </div>
+        <button type="submit" id="loginBtn" class="btn btn-info w-100 py-2 mb-3">
+            <i class="fa-solid fa-right-to-bracket me-2"></i>Sisteme Gir
+        </button>
+        
+        <button type="button" class="btn btn-outline-light w-100 py-2" data-bs-toggle="modal" data-bs-target="#registerModal">
+            <i class="fa-solid fa-user-plus me-2"></i>Sistemde Yeni misiniz? Kayıt Olun
+        </button>
+    </form>
+
+    <button type="button" class="btn btn-outline-secondary w-100 mt-3 py-2" onclick="toggleLoginTheme()">
+        <i id="loginThemeIcon" class="fa-solid fa-sun me-2"></i> <span id="loginThemeText">Açık Tema'ya Geç</span>
+    </button>
+
+    <div class="text-center mt-3">
+        <button type="button" class="btn btn-sm btn-link text-secondary text-decoration-none" onclick="toggleLoginTheme()">
+            <i id="loginThemeIcon" class="fa-solid fa-sun me-1"></i> <span id="loginThemeText">Açık Tema</span>
+        </button>
+    </div>
+    
+    <div id="error-message" class="alert alert-danger mt-3 d-none small"></div>
+</div>
+
+<div class="modal fade" id="registerModal" tabindex="-1" aria-hidden="true" data-bs-theme="dark">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-light border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title"><i class="fa-solid fa-shield-halved text-info me-2"></i>GHVault Yerel Kayıt</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="registerForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small text-secondary">Adınız</label>
+                            <input type="text" class="form-control" id="regFirstName" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small text-secondary">Soyadınız</label>
+                            <input type="text" class="form-control" id="regLastName" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-secondary">Departman</label>
+                        <select class="form-select" id="regDepartment" required>
+                            <option value="Cyber Security">Cyber Security</option>
+                            <option value="IT System">IT System</option>
+                            <option value="Network">Network</option>
+                            <option value="Misafir/Taşeron">Misafir / Taşeron</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-secondary">Kullanıcı Adı</label>
+                        <input type="text" class="form-control" id="regUsername" placeholder="Örn: tayfun.kaydi" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-secondary">Şifre Belirleyin</label>
+                        <input type="password" class="form-control" id="regPassword" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-info" onclick="submitRegistration()"><i class="fa-solid fa-paper-plane me-2"></i>Kayıt Talebi Gönder</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // === 🌍 ORTAM (ENVIRONMENT) VE API AYARLARI ===
+    const isProd = true; 
+
+    const TEST_API = "http://localhost:5044/api";
+    const LIVE_API = "http://10.197.227.227/api/api"; 
+
+    const API_BASE_URL = isProd ? LIVE_API : TEST_API;
+    // ==============================================
+
+    // === TEMA YÖNETİMİ (LOGIN) ===
+    function toggleLoginTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        document.documentElement.setAttribute('data-bs-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        
+        const icon = document.getElementById('loginThemeIcon');
+        const text = document.getElementById('loginThemeText');
+        if(icon && text) {
+            icon.className = newTheme === 'light' ? 'fa-solid fa-moon me-1' : 'fa-solid fa-sun me-1';
+            text.innerText = newTheme === 'light' ? 'Koyu Tema' : 'Açık Tema';
+        }
+    }
+
+    // Sayfa ilk açıldığında ikonları günceller
+    window.addEventListener('DOMContentLoaded', () => {
+        const theme = localStorage.getItem('theme') || 'dark';
+        const icon = document.getElementById('loginThemeIcon');
+        const text = document.getElementById('loginThemeText');
+        if(icon && text) {
+            icon.className = theme === 'light' ? 'fa-solid fa-moon me-1' : 'fa-solid fa-sun me-1';
+            text.innerText = theme === 'light' ? 'Koyu Tema' : 'Açık Tema';
+        }
+    });
+
+    async function login(event) {
+        event.preventDefault(); 
+
+        const usernameInput = document.getElementById('username').value;
+        const passwordInput = document.getElementById('password').value;
+        const errorDiv = document.getElementById('error-message');
+        const loginBtn = document.getElementById('loginBtn');
+        
+        const originalBtnText = loginBtn.innerHTML;
+        loginBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Giriş Yapılıyor...';
+        loginBtn.disabled = true;
+        errorDiv.classList.add('d-none');
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/Auth/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: usernameInput,
+                    password: passwordInput
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                localStorage.setItem('jwt_token', data.token);
+                window.location.href = 'index.html';
+            } else {
+                const errorText = await response.text();
+                errorDiv.innerText = errorText;
+                errorDiv.classList.remove('d-none');
+            }
+        } catch (error) {
+            errorDiv.innerText = "Sunucuya bağlanılamadı. Lütfen IT ekibiyle iletişime geçin.";
+            errorDiv.classList.remove('d-none');
+        } finally {
+            loginBtn.innerHTML = originalBtnText;
+            loginBtn.disabled = false;
+        }
+    }
+
+    // === KAYIT MOTORU ===
+    async function submitRegistration() {
+        const formData = {
+            firstName: document.getElementById('regFirstName').value.trim(),
+            lastName: document.getElementById('regLastName').value.trim(),
+            department: document.getElementById('regDepartment').value,
+            username: document.getElementById('regUsername').value.trim(),
+            password: document.getElementById('regPassword').value.trim()
+        };
+
+        if (!formData.firstName || !formData.lastName || !formData.username || !formData.password) {
+            alert("Lütfen tüm alanları doldurun!");
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/Auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            if (!response.ok) {
+                let errorMsg = await response.text();
+                try {
+                    const jsonError = JSON.parse(errorMsg);
+                    errorMsg = jsonError.message || errorMsg;
+                } catch(e) {}
+                
+                alert("Kayıt Hatası: " + errorMsg);
+                return;
+            }
+
+            const result = await response.json();
+            alert(result.message); 
+            
+            var myModalEl = document.getElementById('registerModal');
+            var modal = bootstrap.Modal.getInstance(myModalEl) || new bootstrap.Modal(myModalEl);
+            modal.hide();
+            document.getElementById('registerForm').reset();
+
+        } catch (error) {
+            console.error("Sistem Hatası:", error);
+            alert("Sunucuya ulaşılamadı, lütfen daha sonra tekrar deneyin.");
+        }
+    }
+</script>
+
+<script src="./login/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
